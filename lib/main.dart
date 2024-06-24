@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const Chatinboxscreen(),
     );
   }
 }

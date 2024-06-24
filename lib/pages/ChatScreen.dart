@@ -13,7 +13,7 @@ class _ChatscreenState extends State<Chatscreen> {
   Widget build(BuildContext context) {
     return  Scaffold(
         appBar: AppBar(
-        backgroundColor: Colorresources.PrimaryColor,
+        backgroundColor: ColorResources.PrimaryColor,
         title: Text(
         "Recent Chats",
         style: TextStyle(color: Colors.black),

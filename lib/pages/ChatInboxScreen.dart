@@ -48,7 +48,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colorresources.PrimaryColor,
+        backgroundColor: ColorResources.PrimaryColor,
         title: Text(
           "Recent Chats",
           style: TextStyle(color: Colors.black),
@@ -92,8 +92,8 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                       margin: EdgeInsets.symmetric(horizontal: 8.0),
                       decoration: BoxDecoration(
                         color: selectedIndex == index
-                            ? Colorresources.SecondaryColor // Change to desired color when selected
-                            : Colorresources.PrimaryColor, // Original color
+                            ? ColorResources.SecondaryColor // Change to desired color when selected
+                            : ColorResources.PrimaryColor, // Original color
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Center(
@@ -126,7 +126,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                       padding: EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
                         color: selectedChatIndex == index
-                            ? Colorresources.ContainerColor // Change to desired color when selected
+                            ? ColorResources.ContainerColor // Change to desired color when selected
                             : Colors.white, // Original color
                         border: Border.all(color: Colors.grey[300]!, width: 1), // Simple border
                         borderRadius: BorderRadius.circular(8.0), // Rounded corners
@@ -172,7 +172,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                                 decoration: BoxDecoration(
-                                  color: Colorresources.SecondaryColor,
+                                  color: ColorResources.SecondaryColor,
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: Text(

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import 'package:socially/pages/ProfileScreen.dart';
@@ -44,9 +45,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        Icon(Icons.home),
+                        Icon(Icons.home, color: _selectedIndex == 0 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                         Text("Home",
-                        style: TextStyle(fontSize: 10),
+                        style: TextStyle(fontSize: 10, color: _selectedIndex == 0 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                         overflow: TextOverflow.ellipsis,)
                       ],
                     ),
@@ -60,9 +61,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        Icon(Icons.map),
+                        Icon(Icons.map, color: _selectedIndex == 1 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                         Text("Connect",
-                          style: TextStyle(fontSize: 10),
+                          style: TextStyle(fontSize: 10, color: _selectedIndex == 1 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                           overflow: TextOverflow.ellipsis,)
                       ],
                     ),
@@ -76,9 +77,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        Icon(Icons.notification_add),
+                        Icon(Icons.notification_add, color: _selectedIndex == 2 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                         Text("Notification",
-                          style: TextStyle(fontSize: 10),
+                          style: TextStyle(fontSize: 10, color: _selectedIndex == 2 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                           overflow: TextOverflow.ellipsis,)
                       ],
                     ),
@@ -92,9 +93,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        Icon(Icons.person),
+                        Icon(Icons.person, color: _selectedIndex == 3 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                         Text("Profile",
-                          style: TextStyle(fontSize: 10),
+                          style: TextStyle(fontSize: 10, color: _selectedIndex == 3 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                           overflow: TextOverflow.ellipsis,)
                       ],
                     ),

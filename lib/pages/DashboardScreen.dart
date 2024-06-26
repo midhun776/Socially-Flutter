@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
+import 'package:socially/pages/ConnectMapScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import 'package:socially/pages/ProfileScreen.dart';
 
@@ -20,8 +21,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final _pages = [
     const HomeScreen(),
+    const ConnectScreen(),
     const Chatinboxscreen(),
-    const HomeScreen(),
     const ProfileScreen(),
   ];
 

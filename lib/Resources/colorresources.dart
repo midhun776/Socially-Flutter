@@ -7,4 +7,6 @@ class ColorResources{
   static Color BottomNavColor =const Color(0xFFE8F3DD);
   static Color UnselectedIconColor =const Color(0xFFA0A98C);
   static Color SelectedIconColor =const Color(0xFF53730F);
+  static Color LocationBarColor =const Color(0xFFE4EAD8);
+  static Color UserCardColor =const Color(0xFFE4EAD8);
 }

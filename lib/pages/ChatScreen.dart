@@ -105,7 +105,7 @@ class _ChatscreenState extends State<Chatscreen> {
         title: const Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage('assets/images/three.jpeg'), // Replace with your profile picture
+              backgroundImage: AssetImage('assets/images/user3.jpeg'), // Replace with your profile picture
             ),
             SizedBox(width: 10),
             Text('Alice'), // Replace with the name

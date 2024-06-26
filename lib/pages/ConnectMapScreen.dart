@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:socially/Resources/colorresources.dart';
+import 'package:socially/pages/LocationSearchScreen.dart';
 
 class ConnectScreen extends StatefulWidget {
   const ConnectScreen({super.key});
@@ -67,33 +69,33 @@ class _ConnectScreenState extends State<ConnectScreen> {
     return Scaffold(
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 54.0, left: 20, bottom: 20),
-            child: Row(
-              children: [
-                Icon(Icons.arrow_back,),
-                SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () async {
-                    print("Hi");
-                    // List<String> result = await Navigator.push(context, MaterialPageRoute(builder: (context) => LocationSearchPage()));
-                    // print("Hoi"+result.toString());
-                    // setState(() {
-                    //   _selectedLocation = result[0].toString();
-                    //   _center = LatLng(double.parse(result[1].toString()), double.parse(result[2].toString()));
-                    // });
-                    // mapController?.animateCamera(CameraUpdate.newLatLng(_center));
-                    // _filterFriends();
-                  },
-                  child: Row(
-                    children: [
-                      Icon(Icons.location_on, size: 18, color: Color(0xFF456B1F),),
-                      SizedBox(width: 3),
-                      Text(_selectedLocation, style: TextStyle(color: Color(0xFF456B1F),fontWeight: FontWeight.bold),),
-                    ],
+          Container(
+            color: ColorResources.LocationBarColor,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 54.0, left: 30, bottom: 20),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      List<String> result = await Navigator.push(context, MaterialPageRoute(builder: (context) => LocationSearchScreen()));
+                      print("Hoi"+result.toString());
+                      setState(() {
+                        _selectedLocation = result[0].toString();
+                        _center = LatLng(double.parse(result[1].toString()), double.parse(result[2].toString()));
+                      });
+                      mapController?.animateCamera(CameraUpdate.newLatLng(_center));
+                      _filterFriends();
+                    },
+                    child: Row(
+                      children: [
+                        Icon(Icons.location_on, size: 18, color: Color(0xFF456B1F),),
+                        SizedBox(width: 3),
+                        Text(_selectedLocation, style: TextStyle(color: Color(0xFF456B1F),fontWeight: FontWeight.bold),),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -139,7 +141,7 @@ class NearbyFriendsPopup extends StatelessWidget {
         maxHeight: maxPopupHeight, // Maximum height for the container
       ),
       decoration: BoxDecoration(
-        color: Color(0xFFF6FFEC),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [BoxShadow(blurRadius: 10, color: Colors.grey)],
       ),
@@ -153,13 +155,13 @@ class NearbyFriendsPopup extends StatelessWidget {
             return Container(
               margin: EdgeInsets.only(bottom: 10), // Space between items
               decoration: BoxDecoration(
-                color: Color(0xFFD8EAC1),
+                color: ColorResources.UserCardColor,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [BoxShadow(blurRadius: 2, color: Colors.black.withOpacity(0.5))],
               ),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: AssetImage('assets/user${index + 1}.jpg'), // Replace with actual images
+                  backgroundImage: AssetImage('assets/images/user${index + 1}.jpg'), // Replace with actual images
                 ),
                 title: Text(friends[index]['name']!, style: TextStyle(fontWeight: FontWeight.bold),),
                 subtitle: Text(friends[index]['location']!),

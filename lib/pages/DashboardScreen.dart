@@ -31,8 +31,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: _pages[_selectedIndex],
       bottomNavigationBar:
           BottomAppBar(
+            color: ColorResources.BottomNavColor,
             shape: CircularNotchedRectangle(),
             notchMargin: 5,
+            elevation: 5,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               mainAxisSize: MainAxisSize.max,
@@ -123,8 +125,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton:
       FloatingActionButton(
+        backgroundColor: ColorResources.SecondaryColor,
         onPressed: () {},
-            child: Icon(Icons.add),
+            child: Icon(Icons.add, color: ColorResources.PrimaryColor,),
         elevation: 2.0,  // Adjust elevation as needed
         shape: CircleBorder(),
       )

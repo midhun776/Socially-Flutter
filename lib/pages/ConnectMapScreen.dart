@@ -90,7 +90,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                       children: [
                         Icon(Icons.location_on, size: 18, color: Color(0xFF456B1F),),
                         SizedBox(width: 3),
-                        Text(_selectedLocation, style: TextStyle(color: Color(0xFF456B1F),fontWeight: FontWeight.bold),),
+                        Container(width: 250,child: Text(_selectedLocation,maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Color(0xFF456B1F),fontWeight: FontWeight.bold),)),
                       ],
                     ),
                   ),

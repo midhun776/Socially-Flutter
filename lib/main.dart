@@ -5,6 +5,7 @@ import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
+import 'package:socially/pages/TravelCommunityScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const MyHomePage(),
     );
   }
 }

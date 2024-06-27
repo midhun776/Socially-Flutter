@@ -5,6 +5,7 @@ import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
+import 'package:socially/pages/TravelCommunityScreen.dart';
 
 void main() {
   runApp(const MyApp());

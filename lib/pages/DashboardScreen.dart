@@ -21,7 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   var _selectedIndex = 0;
 
   final _pages = [
-    const NotificationScreen(),
+    const HomeScreen(),
     const ConnectScreen(),
     const Chatinboxscreen(),
     const ProfileScreen(),

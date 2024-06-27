@@ -41,7 +41,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
     },
   ];
 
-  int selectedIndex = -1; // Initialize with -1 indicating no selection
+  int selectedIndex = 0; // Initialize with -1 indicating no selection
   int selectedChatIndex = -1; // Initialize with -1 indicating no chat selected
 
   @override

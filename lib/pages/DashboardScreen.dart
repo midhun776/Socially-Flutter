@@ -6,6 +6,7 @@ import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/ConnectMapScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
+import 'package:socially/pages/NotificationScreen.dart';
 import 'package:socially/pages/ProfileScreen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -20,7 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   var _selectedIndex = 0;
 
   final _pages = [
-    const HomeScreen(),
+    const NotificationScreen(),
     const ConnectScreen(),
     const Chatinboxscreen(),
     const ProfileScreen(),

@@ -20,28 +20,28 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
   final List<Map<String, dynamic>> chatList = [
     {
       "name": "Alice",
-      "profileImage": "assets/images/three.jpeg", // Asset image
+      "profileImage": "assets/images/user1.jpg", // Asset image
       "content": "Good Night ❤",
       "messages": 3,
       "timestamp": "10:30 PM",
     },
     {
       "name": "Bob",
-      "profileImage": "assets/images/two.jpeg", // Asset image
+      "profileImage": "assets/images/user2.jpeg", // Asset image
       "content": "Pls take a look at the images",
       "messages": 5,
       "timestamp": "9:15 PM",
     },
     {
       "name": "Charlie",
-      "profileImage": "assets/images/one.jpg", // Asset image
+      "profileImage": "assets/images/user3.jpeg", // Asset image
       "content": "Let's Meet Tomorrow",
       "messages": 2,
       "timestamp": "8:45 PM",
     },
   ];
 
-  int selectedIndex = -1; // Initialize with -1 indicating no selection
+  int selectedIndex = 0; // Initialize with -1 indicating no selection
   int selectedChatIndex = -1; // Initialize with -1 indicating no chat selected
 
   @override

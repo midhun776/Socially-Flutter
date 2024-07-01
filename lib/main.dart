@@ -5,6 +5,7 @@ import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
+import 'package:socially/pages/LoginScreen.dart';
 import 'package:socially/pages/TravelCommunityScreen.dart';
 
 void main() {
@@ -53,6 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3),() => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardScreen())));
+    Timer(Duration(seconds: 3),() => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen())));
   }
 }

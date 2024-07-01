@@ -255,10 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     child: Padding(
                       padding: const EdgeInsets.only(left: 26.0),
-                      child: Text('Grateful for Socially and my friend,Alex, who led me to Harvards gates.',
-                        style: TextStyle(
-                            letterSpacing: 3.0
-                        ),),
+                      child: Text('Grateful for Socially and my friend,Alex, who led me to Harvards gates.'),
                     ),
                   ),
 

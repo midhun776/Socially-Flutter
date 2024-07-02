@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:socially/Resources/colorresources.dart'; // Assuming this is for custom colors
+import 'package:socially/Resources/colorresources.dart';
 
 class CommunitiesScreen extends StatefulWidget {
   const CommunitiesScreen({Key? key}) : super(key: key);
@@ -31,20 +31,11 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
       appBar: AppBar(
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text('Communities'),
-              IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {
-                  // Add your onPressed code here!
-                },
-              ),
-            ],
+             child:  Text('Communities',
+             textAlign:TextAlign.start),
+
           ),
         ),
-      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

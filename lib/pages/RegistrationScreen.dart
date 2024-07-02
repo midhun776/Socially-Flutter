@@ -240,10 +240,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               email, password, fullName);
 
                           if (user != null) {
+                            var tempUser = [user.uid, fullName, email, password];
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AddLocation(),
+                                builder: (context) => AddLocation(userData: tempUser),
                               ),
                             );
                           } else {

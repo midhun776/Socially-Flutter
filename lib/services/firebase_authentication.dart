@@ -36,6 +36,11 @@ class AuthenticationService {
   }
 
   Future<void> signOut() async {
-    await _auth.signOut();
+    try{
+      await _auth.signOut();
+    }catch(e){
+      print(e.toString());
+      return null;
+    }
   }
 }

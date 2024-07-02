@@ -6,8 +6,8 @@ import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
+import 'package:socially/pages/LoginScreen.dart';
 import 'package:socially/pages/TravelCommunityScreen.dart';
-import 'package:socially/pages/login.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();

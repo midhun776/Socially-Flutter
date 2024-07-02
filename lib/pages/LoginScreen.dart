@@ -234,25 +234,38 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         const SizedBox(height: 3),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                            );
-                          },
-                          child: RichText(
-                            text: const TextSpan(
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black, height: 1.5),
-                              children: [
-                                TextSpan(text: 'Dont have an account?\t'),
-                                TextSpan(
-                                  text: 'Register ',
-                                  style: TextStyle(color: ColorResources.LoginGreen,fontSize: 17),
-                                ),
-                              ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Don't have an account?\t",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
+                                height: 1.5,
+                              ),
                             ),
-                          ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const RegisterScreen()),
+                                );
+                              },
+                              child: const Text(
+                                'Register ',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF618F00),
+                                  height: 1.5,
+                                  letterSpacing: 0.7,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     )

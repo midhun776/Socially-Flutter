@@ -9,6 +9,7 @@ import 'package:socially/pages/HomeScreen.dart';
 import 'package:socially/pages/LoginScreen.dart';
 import 'package:socially/pages/TravelCommunityScreen.dart';
 
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

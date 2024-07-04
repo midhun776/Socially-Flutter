@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:socially/pages/AddPostScreen.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
@@ -53,6 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3),() => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardScreen())));
+    Timer(Duration(seconds: 3),() => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddPostScreen())));
   }
 }

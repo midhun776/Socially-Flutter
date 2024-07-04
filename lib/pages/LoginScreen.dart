@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import '../Resources/colorresources.dart';
-import 'ProfileScreen.dart';
+import '../services/firebase_authentication.dart';
+import 'AddLocationScreen.dart';
 import 'RegistrationScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,8 +14,21 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final AuthenticationService _authService = AuthenticationService();
   final _formKey = GlobalKey<FormState>();
   bool _isRememberMeChecked = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,6 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   child: TextFormField(
+                    controller:_emailController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(color: ColorResources.LoginGreen),
@@ -95,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
+                        return 'Please enter your email';
                       }
                       return null;
                     },
@@ -104,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: TextFormField(
+                    controller: _passwordController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(color: ColorResources.LoginGreen),
@@ -181,12 +197,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         textStyle: const TextStyle(fontSize: 16),
                         // minimumSize: const Size(150, 50),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const DashboardScreen()),
-                          );
+                          var email = _emailController.text;
+                          var password = _passwordController.text;
+
+                          var user =
+                              await _authService.signInWithEmailPassword(
+                              email, password);
+
+                          if (user != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DashboardScreen(),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('No User Found')),
+                            );
+                          }
                         }
                       },
                       child: const Text('Login'),
@@ -212,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                                  MaterialPageRoute(builder: (context) => const AddLocation(userData: [],)),
                                 );
                               },
                               child: Image.asset('assets/images/google.png',
@@ -224,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                                  MaterialPageRoute(builder: (context) => const AddLocation(userData: [],)),
                                 );
                               },
                               child: Image.asset('assets/images/facebook.png',
@@ -234,25 +266,38 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         const SizedBox(height: 3),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                            );
-                          },
-                          child: RichText(
-                            text: const TextSpan(
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black, height: 1.5),
-                              children: [
-                                TextSpan(text: 'Dont have an account?\t'),
-                                TextSpan(
-                                  text: 'Register ',
-                                  style: TextStyle(color: ColorResources.LoginGreen,fontSize: 17),
-                                ),
-                              ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Don't have an account?\t",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
+                                height: 1.5,
+                              ),
                             ),
-                          ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const RegisterScreen()),
+                                );
+                              },
+                              child: const Text(
+                                'Register ',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF618F00),
+                                  height: 1.5,
+                                  letterSpacing: 0.7,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     )

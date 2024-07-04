@@ -7,6 +7,7 @@ import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import 'package:socially/pages/LoginScreen.dart';
+import 'package:socially/pages/RegistrationScreen.dart';
 import 'package:socially/pages/TravelCommunityScreen.dart';
 
 
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const RegisterScreen(),
     );
   }
 }

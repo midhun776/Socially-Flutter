@@ -30,11 +30,14 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
              child:  Text('Communities',
              textAlign:TextAlign.start),
-
           ),
+        actions: [
+          IconButton(onPressed: () {}, icon: Icon(Icons.group_add)),
+          SizedBox(width: 10)
+        ],
         ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,18 +47,16 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    // Add your onPressed code here!
-                  },
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    'All Communities',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 18,
-                      color: Colors.black,
+                      'All Communities',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
                 ),
                 TextButton(
                   onPressed: () {

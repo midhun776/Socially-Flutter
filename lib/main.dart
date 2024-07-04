@@ -10,8 +10,7 @@ import 'package:socially/pages/LoginScreen.dart';
 import 'package:socially/pages/RegistrationScreen.dart';
 import 'package:socially/pages/TravelCommunityScreen.dart';
 
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(const MyApp());
@@ -32,6 +31,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});

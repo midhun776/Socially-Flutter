@@ -7,42 +7,37 @@ class ProfileStats extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(2.0, 5.0, 2.0, 5.0),
       child: Card(
-        color:ColorResources.PrimaryColor,
+        color: ColorResources.PrimaryColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-
         ),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Column(
-                children: [
-                  Text('6', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-                  Text('Posts'),
-                ],
+              Expanded(
+                child: Column(
+                  children: [
+                    Text('6', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                    Text('Posts', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
-
-              Divider(
+              Container(
+                height: 60, // Adjust the height according to your design
+                child: VerticalDivider(
+                  color: Colors.grey, // Adjust the color to fit your design
+                  thickness: 1, // Adjust the thickness to fit your design
+                ),
               ),
-
-
-              Column(
-                children: [
-                  Text('528', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-                  Text('Following'),
-                ],
-              ),
-              Divider(
-
-              ),
-
-              Column(
-                children: [
-                  Text('1.2K', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-                  Text('Followers'),
-                ],
+              Expanded(
+                child: Column(
+                  children: [
+                    Text('528', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                    Text('Connections', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
             ],
           ),

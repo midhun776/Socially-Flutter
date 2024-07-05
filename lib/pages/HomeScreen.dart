@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/NotificationScreen.dart';
@@ -94,6 +95,8 @@ class HomeScreen extends StatefulWidget {
 
 
 class _HomeScreenState extends State<HomeScreen> {
+  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -192,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
 
 
-                        ElevatedButton(onPressed: (){}, child: Text(
+                        ElevatedButton(onPressed: () {getUserData(userId!);}, child: Text(
                           "Post",
                           style: TextStyle(
                               color: Colors.white
@@ -292,5 +295,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void getUserData(String userId) async {
+
   }
 }

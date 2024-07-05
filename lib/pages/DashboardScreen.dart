@@ -5,6 +5,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/AddPostScreen.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
+import 'package:socially/pages/CommunitiesScreen.dart';
 import 'package:socially/pages/ConnectMapScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import 'package:socially/pages/NotificationScreen.dart';
@@ -24,7 +25,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _pages = [
     const HomeScreen(),
     const ConnectScreen(),
-    const Chatinboxscreen(),
+    const CommunitiesScreen(),
     const ProfileScreen(),
   ];
 
@@ -82,8 +83,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        Icon(Icons.notification_add, color: _selectedIndex == 2 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
-                        Text("Notification",
+                        Icon(Icons.group, color: _selectedIndex == 2 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
+                        Text("Communities",
                           style: TextStyle(fontSize: 10, color: _selectedIndex == 2 ? ColorResources.SelectedIconColor : ColorResources.UnselectedIconColor),
                           overflow: TextOverflow.ellipsis,)
                       ],

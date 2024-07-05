@@ -29,4 +29,5 @@ class CustomIcons {
   static const IconData vector__4_ = IconData(0xe805, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData vector__3_ = IconData(0xe806, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData vector__2_ = IconData(0xe807, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+
 }

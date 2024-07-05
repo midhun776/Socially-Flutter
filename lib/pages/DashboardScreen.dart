@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:socially/Resources/colorresources.dart';
+import 'package:socially/pages/AddPostScreen.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/CommunitiesScreen.dart';
 import 'package:socially/pages/ConnectMapScreen.dart';
@@ -129,7 +130,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       floatingActionButton:
       FloatingActionButton(
         backgroundColor: ColorResources.SecondaryColor,
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>AddPostScreen()));
+        },
             child: Icon(Icons.add, color: ColorResources.PrimaryColor,),
         elevation: 2.0,  // Adjust elevation as needed
         shape: CircleBorder(),

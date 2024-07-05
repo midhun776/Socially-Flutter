@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:socially/pages/AddPostScreen.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import 'package:socially/pages/LoginScreen.dart';
+import 'package:socially/pages/RegistrationScreen.dart';
 import 'package:socially/pages/TravelCommunityScreen.dart';
 
 void main() async {

@@ -176,17 +176,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.only(left: 22.0,top: 8.0),
                   child: Container(
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(onPressed: (){}, icon: Icon(
-                            CustomIcons.vector__1_
-                        )),
-                        IconButton(onPressed: (){}, icon: Icon(
-                            CustomIcons.vector__2_
-                        ),),
-                        IconButton(onPressed: (){}, icon: Icon(
-                            CustomIcons.vector__3_
-                        )),
-                        SizedBox(width: 120.0),
+                        Row(
+                          children: [
+                            IconButton(onPressed: (){}, icon: Icon(
+                                CustomIcons.vector__1_
+                            )),
+                            IconButton(onPressed: (){}, icon: Icon(
+                                CustomIcons.vector__2_
+                            ),),
+                            IconButton(onPressed: (){}, icon: Icon(
+                                CustomIcons.vector__3_
+                            )),
+                          ],
+                        ),
+
+
                         ElevatedButton(onPressed: (){}, child: Text(
                           "Post",
                           style: TextStyle(

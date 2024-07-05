@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:socially/config.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/NotificationScreen.dart';
 

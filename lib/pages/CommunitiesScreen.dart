@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:socially/Resources/colorresources.dart';
+import 'package:socially/pages/AddCommunityScreen.dart';
 
 class CommunitiesScreen extends StatefulWidget {
   const CommunitiesScreen({Key? key}) : super(key: key);
@@ -35,7 +36,9 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
              textAlign:TextAlign.start),
           ),
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.group_add)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AddCommunityScreen()));
+          }, icon: Icon(Icons.group_add)),
           SizedBox(width: 10)
         ],
         ),

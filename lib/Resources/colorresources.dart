@@ -12,4 +12,5 @@ class ColorResources{
   static Color UserCardColor =const Color(0xFFE4EAD8);
   static const Color LoginGreen =const Color(0xFF618F00);
   static const Color LoginWhite =const Color(0xFFE2E7DE);
+  static const Color hintColor =const Color(0xFFA0A98C);
 }

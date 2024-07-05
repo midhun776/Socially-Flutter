@@ -42,6 +42,8 @@ class _AddLocationState extends State<AddLocation> {
         "userEmail": widget.userData[2],
         "userPassword": widget.userData[3],
         "userPhone": widget.userData[4],
+        "posts": "0",
+        "chats": [],
         "location": widget.userData[5],
         "latitude": "123456",
         "longitude": "654321",

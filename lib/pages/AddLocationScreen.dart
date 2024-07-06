@@ -19,32 +19,32 @@ class AddLocation extends StatefulWidget {
 
 class _AddLocationState extends State<AddLocation> {
   final TextEditingController _addLocationController = TextEditingController();
-  final TextEditingController _addPhoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   void _addLocation() async {
-    String addPhoneNumber = _addLocationController.text;
-    String addLocation = _addPhoneController.text;
+    String addLocation = _addLocationController.text;
 
     String latitude = "1234567";
     String longitude = "7654321";
 
-    if (addPhoneNumber.isNotEmpty && addLocation.isNotEmpty) {
+    if (addLocation.isNotEmpty) {
       setState(() {
-        widget.userData.add(addPhoneNumber);
-        widget.userData.add(addPhoneNumber);
+        widget.userData.add(addLocation);
+        widget.userData.add(latitude);
+        widget.userData.add(longitude);
       });
 
 
       var reqBody = {
         "userID" : widget.userData[0],
-        "userName" : widget.userData[1],
-        "userEmail": widget.userData[2],
-        "userPassword": widget.userData[3],
+        "userEmail": widget.userData[1],
+        "userPassword": widget.userData[2],
+        "userName" : widget.userData[3],
         "userPhone": widget.userData[4],
+        "userProfilePic": widget.userData[5],
         "posts": "0",
         "chats": [],
-        "location": widget.userData[5],
+        "location": widget.userData[6],
         "latitude": "123456",
         "longitude": "654321",
       };
@@ -56,7 +56,6 @@ class _AddLocationState extends State<AddLocation> {
       print(response);
 
       _addLocationController.clear();
-      _addPhoneController.clear();
 
       Navigator.push(
         context,
@@ -106,42 +105,6 @@ class _AddLocationState extends State<AddLocation> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: TextFormField(
-                    controller: _addPhoneController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF618F00)),
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                        BorderSide(color: Color(0xFF618F00), width: 1.5),
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      hintText: 'Phone Number',
-                      prefixIcon: Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Icon(
-                          Icons.phone_rounded,
-                          color: Color(0xFF618F00),
-                        ),
-                      ),
-                      hintStyle:
-                      TextStyle(color: Color(0xFF000000), fontSize: 18),
-                      filled: true,
-                      fillColor: Color(0xFFE2E7DE),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty || value.length != 10) {
-                        return 'Please enter Mobile Number Correctly';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
                 Padding(
                   padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 6),

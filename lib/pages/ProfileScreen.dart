@@ -230,8 +230,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     var userChats = userDetails?["chats"];
     print(userConnectionCount);
     print(userDetails);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Number of connections: $userConnectionCount")),
-    );
+
   }
 }

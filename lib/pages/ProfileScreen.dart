@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Resources/colorresources.dart';
+import 'package:http/http.dart' as http;
+import '../config.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -15,6 +19,17 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
+  Map<String, dynamic>? userDetails;
+
+  @override
+  void initState() {
+    super.initState();
+    if (userId != null) {
+      getUserData(userId!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +42,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Action to be performed on arrow button press
             Navigator.pop(context);
           },
         ),
@@ -36,7 +50,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-
             Container(
               width: MediaQuery.of(context).size.width,
               margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
@@ -50,16 +63,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   topLeft: Radius.circular(10),
                 ),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/images/img.png'),
+                    backgroundImage: userDetails != null && userDetails!['userProfilePic'] != null
+                        ? NetworkImage(userDetails!['userProfilePic'])
+                        : const AssetImage('assets/images/profilePic.png') as ImageProvider,
                   ),
                 ],
               ),
             ),
-
             // Profile Header
             Container(
               width: MediaQuery.of(context).size.width,
@@ -77,21 +91,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 10),
-                  const Text(
-                    'Thomas R.',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Text(
+                    userDetails != null ? userDetails!['userName'] ?? 'Unknown' : 'Loading...',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on,
                         color: Colors.grey,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'Massachusetts, USA',
-                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                        userDetails != null ? userDetails!['location'] ?? 'Unknown' : 'Loading...',
+                        style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -115,7 +129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-
             // Stats and Grid View in Column
             Container(
               width: MediaQuery.of(context).size.width,
@@ -134,9 +147,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatColumn('10', 'Posts'),
+                        _buildStatColumn(userDetails?['posts']?.toString() ?? '0', 'Posts'),
                         _buildCustomDivider(), // Custom divider after Posts
-                        _buildStatColumn('528', 'Connections'),
+                        _buildStatColumn(userDetails?['connections']?.length.toString() ?? '0', 'Connections'),
                       ],
                     ),
                   ),
@@ -194,6 +207,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: 40,
       color: Colors.blueGrey,
       margin: const EdgeInsets.symmetric(horizontal: 8),
+    );
+  }
+
+  void getUserData(String userId) async {
+    var reqBody = {"userId": userId};
+    print(userId);
+
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    print(userId);
+    print(response);
+
+    var jsonResponse = jsonDecode(response.body);
+    print(jsonResponse);
+    setState(() {
+      userDetails = jsonResponse["data"];
+    });
+    var userConnectionCount = userDetails?["connections"]?.length ?? 0;
+    var userChats = userDetails?["chats"];
+    print(userConnectionCount);
+    print(userDetails);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Number of connections: $userConnectionCount")),
     );
   }
 }

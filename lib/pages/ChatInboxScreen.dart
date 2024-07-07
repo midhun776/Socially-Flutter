@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/ChatScreen.dart';
-import 'package:socially/pages/DashboardScreen.dart';
-import 'package:socially/pages/HomeScreen.dart';
 import 'package:socially/config.dart'; // Import your config file
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 
 class Chatinboxscreen extends StatefulWidget {
-  const Chatinboxscreen({super.key});
+  const Chatinboxscreen({Key? key}) : super(key: key);
 
   @override
   State<Chatinboxscreen> createState() => _ChatinboxscreenState();
 }
 
 class _ChatinboxscreenState extends State<Chatinboxscreen> {
-  late String userId;
-  late Map<String, dynamic> userData;
+  late Map<String, dynamic> currentUser; // To store current user data
   List<Map<String, dynamic>> chatList = [];
 
   final List<String> chatcategories = [
@@ -32,42 +29,47 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
   @override
   void initState() {
     super.initState();
-    getCurrentUser();
+    fetchCurrentUser(); // Fetch current user data on widget initialization
+    fetchChatData(); // Fetch chat data from backend
   }
 
-  Future<void> getCurrentUser() async {
+  Future<void> fetchCurrentUser() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        userId = user.uid;
-        await fetchUserData();
+        setState(() {
+          currentUser = {
+            'name': user.displayName ?? 'Current User',
+            'profileImage': user.photoURL ?? 'assets/images/user1.jpg',
+            'uid': user.uid, // Use user.uid to access current user's ID
+          };
+        });
+        print('Current User UID: ${user.uid}');
+      } else {
+        throw Exception('User not found');
       }
-    } catch (e) {
-      print("Error getting current user: $e");
+    } catch (error) {
+      print('Error fetching current user: $error');
     }
   }
 
-  Future<void> fetchUserData() async {
+  Future<void> fetchChatData() async {
     try {
       final response = await http.post(
-        Uri.parse(findUser), // Use the findUser endpoint
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': userId}),
+        Uri.parse('$url/findUser'),
+        body: {'userId': currentUser['uid']},
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          userData = data['data'];
-          chatList = userData['chats']; // Assuming the response contains a list of chats
+          chatList = List<Map<String, dynamic>>.from(data['data']);
         });
       } else {
-        // Handle error
-        throw Exception('Failed to load user data');
+        throw Exception('Failed to load chat data');
       }
     } catch (error) {
-      // Handle error
-      print('Error fetching user data: $error');
+      print('Error fetching chat data: $error');
     }
   }
 
@@ -167,14 +169,14 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundImage: NetworkImage(chatList[index]['profileImage']), // Use NetworkImage for dynamic images
+                                backgroundImage: AssetImage(currentUser['profileImage']),
                               ),
                               SizedBox(width: 15),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    chatList[index]['name'],
+                                    currentUser['name'],
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:socially/Resources/colorresources.dart';
+import 'package:socially/pages/ChatScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
+import 'package:socially/config.dart'; // Import your config file
 
 class Chatinboxscreen extends StatefulWidget {
   const Chatinboxscreen({super.key});
@@ -11,38 +16,60 @@ class Chatinboxscreen extends StatefulWidget {
 }
 
 class _ChatinboxscreenState extends State<Chatinboxscreen> {
+  late String userId;
+  late Map<String, dynamic> userData;
+  List<Map<String, dynamic>> chatList = [];
+
   final List<String> chatcategories = [
     "All Chats",
     "People",
     "Communities",
   ];
 
-  final List<Map<String, dynamic>> chatList = [
-    {
-      "name": "Alice",
-      "profileImage": "assets/images/user1.jpg", // Asset image
-      "content": "Good Night ❤",
-      "messages": 3,
-      "timestamp": "10:30 PM",
-    },
-    {
-      "name": "Bob",
-      "profileImage": "assets/images/user2.jpeg", // Asset image
-      "content": "Pls take a look at the images",
-      "messages": 5,
-      "timestamp": "9:15 PM",
-    },
-    {
-      "name": "Charlie",
-      "profileImage": "assets/images/user3.jpeg", // Asset image
-      "content": "Let's Meet Tomorrow",
-      "messages": 2,
-      "timestamp": "8:45 PM",
-    },
-  ];
-
-  int selectedIndex = 0; // Initialize with -1 indicating no selection
+  int selectedIndex = 0; // Initialize with 0 indicating the first category is selected
   int selectedChatIndex = -1; // Initialize with -1 indicating no chat selected
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUser();
+  }
+
+  Future<void> getCurrentUser() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        userId = user.uid;
+        await fetchUserData();
+      }
+    } catch (e) {
+      print("Error getting current user: $e");
+    }
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final response = await http.post(
+        Uri.parse(findUser), // Use the findUser endpoint
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'userId': userId}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          userData = data['data'];
+          chatList = userData['chats']; // Assuming the response contains a list of chats
+        });
+      } else {
+        // Handle error
+        throw Exception('Failed to load user data');
+      }
+    } catch (error) {
+      // Handle error
+      print('Error fetching user data: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +83,6 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Action to be performed on arrow button press
             Navigator.pop(context);
           },
         ),
@@ -65,7 +91,6 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
             icon: Icon(Icons.search),
             onPressed: () {
               // Action to be performed on search icon press
-              // You can navigate to a search screen or open a search dialog
             },
           ),
         ],
@@ -75,7 +100,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
           Padding(
             padding: const EdgeInsets.only(left: 15, top: 10),
             child: Container(
-              height: 43, // Adjust height to fit the text containers
+              height: 43,
               margin: EdgeInsets.symmetric(vertical: 8.0),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -84,7 +109,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedIndex = index; // Update selected index on tap
+                        selectedIndex = index;
                       });
                     },
                     child: Container(
@@ -92,8 +117,8 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                       margin: EdgeInsets.symmetric(horizontal: 8.0),
                       decoration: BoxDecoration(
                         color: selectedIndex == index
-                            ? ColorResources.SecondaryColor // Change to desired color when selected
-                            : ColorResources.PrimaryColor, // Original color
+                            ? ColorResources.SecondaryColor
+                            : ColorResources.PrimaryColor,
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Center(
@@ -111,25 +136,29 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
           ),
           Expanded(
             child: Container(
-              color: Colors.white, // Set the background color to white
+              color: Colors.white,
               child: ListView.builder(
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedChatIndex = index; // Update selected chat index on tap
+                        selectedChatIndex = index;
                       });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Chatscreen()),
+                      );
                     },
                     child: Container(
                       margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 15.0),
                       padding: EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
                         color: selectedChatIndex == index
-                            ? ColorResources.ContainerColor // Change to desired color when selected
-                            : Colors.white, // Original color
-                        border: Border.all(color: Colors.grey[300]!, width: 1), // Simple border
-                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                            ? ColorResources.ContainerColor
+                            : Colors.white,
+                        border: Border.all(color: Colors.grey[300]!, width: 1),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -138,7 +167,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundImage: AssetImage(chatList[index]['profileImage']),
+                                backgroundImage: NetworkImage(chatList[index]['profileImage']), // Use NetworkImage for dynamic images
                               ),
                               SizedBox(width: 15),
                               Column(

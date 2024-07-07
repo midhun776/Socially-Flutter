@@ -1,53 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import 'package:socially/Resources/colorresources.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Image.asset(
-          "assets/images/sociallylogo.png",
-          width: 120,
-        ),
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    Timer(Duration(seconds: 3), () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Chatscreen())));
-  }
-}
+import '../Models/MessageModel.dart';
 
 class Chatscreen extends StatefulWidget {
   const Chatscreen({super.key});
@@ -59,10 +16,8 @@ class Chatscreen extends StatefulWidget {
 class _ChatscreenState extends State<Chatscreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<MessageBubble> _messages = [
-    MessageBubble(msgText: "Hi Nazim", msgSender: 'Semder', user: false),
-    MessageBubble(msgText: "Vedivekkande", msgSender: 'Sender', user: false),
-  ];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -70,15 +25,27 @@ class _ChatscreenState extends State<Chatscreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_controller.text.isNotEmpty) {
-      setState(() {
-        _messages.add(MessageBubble(msgText: _controller.text, msgSender: 'Me', user: true));
-        _controller.clear();
-      });
+      var currentUser = _auth.currentUser;
 
-      // Scroll to the bottom after adding a new message
-      _scrollToBottom();
+      if (currentUser != null) {
+        MessageModel message = MessageModel(
+          sender: currentUser.email,
+          text: _controller.text,
+          seen: false,
+          createdon: DateTime.now(),
+        );
+
+        await _firestore.collection('chatrooms').doc(currentUser.uid+"").collection('messages').add(message.toMap());
+
+        setState(() {
+          _controller.clear();
+        });
+
+        // Scroll to the bottom after adding a new message
+        _scrollToBottom();
+      }
     }
   }
 
@@ -90,6 +57,18 @@ class _ChatscreenState extends State<Chatscreen> {
     );
   }
 
+  Stream<List<MessageModel>> _getMessages() {
+    return _firestore
+        .collection('chatrooms')
+        .doc('your_chatroom_id')
+        .collection('messages')
+        .orderBy('createdon', descending: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => MessageModel.fromMap(doc.data() as Map<String, dynamic>))
+        .toList());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,17 +77,16 @@ class _ChatscreenState extends State<Chatscreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Handle back button press
             Navigator.pop(context);
           },
         ),
         title: const Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage('assets/images/user3.jpeg'), // Replace with your profile picture
+              backgroundImage: AssetImage('assets/images/user3.jpeg'),
             ),
             SizedBox(width: 10),
-            Text('Alice'), // Replace with the name
+            Text('Alice'),
           ],
         ),
         actions: [
@@ -126,17 +104,32 @@ class _ChatscreenState extends State<Chatscreen> {
           ),
         ],
       ),
-      backgroundColor: Colors.white, // Set background color to white
+      backgroundColor: Colors.white,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              reverse: false, // Reverse the order of messages
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return _messages[index];
+            child: StreamBuilder<List<MessageModel>>(
+              stream: _getMessages(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                List<MessageModel> messages = snapshot.data!;
+
+                return ListView.builder(
+                  controller: _scrollController,
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    var message = messages[index];
+                    return MessageBubble(
+                      msgText: message.text!,
+                      msgSender: message.sender!,
+                      user: message.sender == _auth.currentUser?.email,
+                    );
+                  },
+                );
               },
             ),
           ),
@@ -218,7 +211,6 @@ class MessageBubble extends StatelessWidget {
                 msgText,
                 style: TextStyle(
                   color: user ? Colors.white : ColorResources.SecondaryColor,
-
                   fontSize: 15,
                 ),
               ),

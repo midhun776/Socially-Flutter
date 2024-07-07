@@ -214,6 +214,11 @@ class _AddCommunityScreenState extends State<AddCommunityScreen> {
 
     print(response);
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Community Added Succefully')),
+    );
+
     Navigator.pop(context);
   }
 }

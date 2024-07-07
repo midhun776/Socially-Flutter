@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:socially/config.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
 import 'package:socially/pages/NotificationScreen.dart';
+import 'package:http/http.dart' as http;
 
 import '../Resources/colorresources.dart';
 import '../custom_icons_icons.dart';
@@ -97,6 +100,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var userId = FirebaseAuth.instance.currentUser?.uid.toString();
+  Map<String, dynamic>? userDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -175,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.only(left: 22.0,top: 8.0),
                   child: Container(
@@ -196,7 +201,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
 
 
-                        ElevatedButton(onPressed: () {getUserData(userId!);}, child: Text(
+                        ElevatedButton(
+                          onPressed: () {
+                            getUserData(userId!);}, child: Text(
                           "Post",
                           style: TextStyle(
                               color: Colors.white
@@ -299,6 +306,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void getUserData(String userId) async {
+    var reqBody = {
+      "userId": userId
+    };
+    print(userId);
 
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    print(userId);
+    print(response);
+
+    var jsonResponse = jsonDecode(response.body);
+    print(jsonResponse);
+    userDetails = jsonResponse["data"];
+    var userConnection = userDetails?.remove("connections");
+    var userChats = userDetails?.remove("chats");
+    print(userConnection);
+    print(userDetails);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(userDetails.toString())),
+    );
   }
 }

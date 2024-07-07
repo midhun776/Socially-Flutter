@@ -1,32 +1,70 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:socially/pages/AddImageScreen.dart';
-import 'package:socially/pages/CommunitiesScreen.dart';
-import 'package:socially/pages/LoginScreen.dart';
-import 'package:socially/pages/ProfileScreen.dart';
+import 'package:socially/Resources/colorresources.dart';
+import 'package:socially/pages/AddLocationScreen.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
 
-import '../services/firebase_authentication.dart';
-import 'AddLocationScreen.dart';
+class AddImageScreen extends StatefulWidget {
+  final List<String> userData;
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const AddImageScreen({super.key, required this.userData});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<AddImageScreen> createState() => _AddImageScreenState(userData);
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  final AuthenticationService _authService = AuthenticationService();
+class _AddImageScreenState extends State<AddImageScreen> {
+  List<String> userData;
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _addPhoneController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  String imageUrlFromFirebase = "";
+
+  _AddImageScreenState(this.userData);
+
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+      await _uploadImage(_image!, pickedFile!.name);
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+  
+  Future<void> _uploadImage(File image, String fileName) async {
+    try {
+      String? userId = FirebaseAuth.instance.currentUser?.uid.toString();
+      if (userId != null) {
+        String extension = path.extension(fileName);
+        Reference ref = _storage.ref().child('user_images').child('$userId$extension');
+        UploadTask uploadTask = ref.putFile(image);
+        TaskSnapshot snapshot = await uploadTask;
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        print('Image URL: $downloadUrl');
+        setState(() {
+          imageUrlFromFirebase = downloadUrl;
+        });
+        // You can now save this URL to the Firestore user document or use it directly
+      } else {
+        print('No user signed in.');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+    }
   }
 
   @override
@@ -41,6 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 Padding(
                   padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 22),
@@ -52,9 +91,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: Colors.black,
                           height: 1.2),
                       children: [
-                        TextSpan(text: 'Create Your\n'),
+                        TextSpan(text: 'Set Your\n'),
                         TextSpan(
-                            text: 'Account ',
+                            text: 'Profile ',
                             style: TextStyle(color: Color(0xFF618F00))),
                         TextSpan(text: 'Now!'),
                       ],
@@ -62,11 +101,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 80,
+                      backgroundImage: _image != null ? FileImage(_image!) : AssetImage('assets/images/profilePic.png') as ImageProvider,
+                      child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: InkWell(
+                          onTap: _pickImage,
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: ColorResources.SecondaryColor,
+                            child: Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 15),
                 Padding(
                   padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: TextFormField(
-                    controller: _emailController,
+                    controller: _fullNameController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(color: Color(0xFF618F00)),
@@ -77,11 +141,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         BorderSide(color: Color(0xFF618F00), width: 1.5),
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
-                      hintText: 'Email',
+                      hintText: 'Full Name',
                       prefixIcon: Padding(
                         padding: EdgeInsets.all(15),
                         child: Icon(
-                          Icons.email,
+                          Icons.person,
                           color: Color(0xFF618F00),
                         ),
                       ),
@@ -92,7 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'Please enter your full name';
                       }
                       return null;
                     },
@@ -102,7 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: TextFormField(
-                    controller: _passwordController,
+                    controller: _addPhoneController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(color: Color(0xFF618F00)),
@@ -113,11 +177,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         BorderSide(color: Color(0xFF618F00), width: 1.5),
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
-                      hintText: 'Password',
+                      hintText: 'Phone Number',
                       prefixIcon: Padding(
                         padding: EdgeInsets.all(15),
                         child: Icon(
-                          Icons.key,
+                          Icons.phone_rounded,
                           color: Color(0xFF618F00),
                         ),
                       ),
@@ -127,55 +191,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fillColor: Color(0xFFE2E7DE),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
+                      if (value == null || value.isEmpty || value.length != 10) {
+                        return 'Please enter Mobile Number Correctly';
                       }
                       return null;
                     },
-                    obscureText: true,
-                  ),
-                ),
-                Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: TextFormField(
-                    controller: _confirmPasswordController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF618F00)),
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                        BorderSide(color: Color(0xFF618F00), width: 1.5),
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      hintText: 'Confirm Password',
-                      prefixIcon: Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Icon(
-                          Icons.key,
-                          color: Color(0xFF618F00),
-                        ),
-                      ),
-                      hintStyle:
-                      TextStyle(color: Color(0xFF000000), fontSize: 18),
-                      filled: true,
-                      fillColor: Color(0xFFE2E7DE),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      if (value != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                    obscureText: true,
                   ),
                 ),
                 Padding(
@@ -193,32 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         textStyle: const TextStyle(fontSize: 16),
                       ),
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          var email = _emailController.text;
-                          var password = _passwordController.text;
-
-                          var user =
-                          await _authService.registerWithEmailPassword(
-                              email, password);
-
-                          if (user != null) {
-                            var tempUser = [user.uid, email, password];
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AddImageScreen(userData: tempUser),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Registration failed')),
-                            );
-                          }
-                        }
-                      },
+                      onPressed: _addDataToList,
                       child: const Text('Next'),
                     ),
                   ),
@@ -229,5 +224,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  void _addDataToList() async {
+    if (_formKey.currentState!.validate()) {
+      var fullName = _fullNameController.text;
+      var phoneNumber = _addPhoneController.text;
+      if (fullName.isNotEmpty || phoneNumber.isEmpty){
+        userData.add(fullName);
+        userData.add(phoneNumber);
+        userData.add(imageUrlFromFirebase);
+
+        print(userData);
+        Navigator.push(context,
+          MaterialPageRoute(
+            builder: (context) => AddLocation(userData: userData),
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please fill the details!')),
+      );
+    }
   }
 }

@@ -95,12 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    '"Meet Jacob: Dreamer, Achiever,\nHarvard Student "',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                  ),
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () {},
@@ -122,56 +116,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            // Stats and Grid View in Row
+            // Stats and Grid View in Column
             Container(
-              //color: ColorResources.GridStatRowColor, // Background color for Stats and Grid View
               width: MediaQuery.of(context).size.width,
               margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Stats Column
+                  // Stats Row
                   Container(
                     decoration: BoxDecoration(
                       color: ColorResources.PrimaryColor, // Background color for stats column
-                      borderRadius: BorderRadius.circular(10), // Border radius for stats column
+                      borderRadius: BorderRadius.circular(8), // Border radius for stats column
                     ),
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
+                    padding: const EdgeInsets.all(18.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatColumn('6', 'Posts'),
-                        _buildDivider(), // Divider after Posts
-                        _buildStatColumn('528', 'Following'),
-                        _buildDivider(), // Divider after Following
-                        _buildStatColumn('1.2K', 'Followers'),
+                        _buildStatColumn('10', 'Posts'),
+                        _buildCustomDivider(), // Custom divider after Posts
+                        _buildStatColumn('528', 'Connections'),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16), // Space between stats and grid
+                  const SizedBox(height: 12), // Space between stats and grid
                   // Grid View for Photos
-                  Expanded(
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 5,
-                        mainAxisSpacing: 5,
-                      ),
-                      itemCount: 6, // Replace with the actual number of items
-                      itemBuilder: (context, index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            image: const DecorationImage(
-                              image: AssetImage('assets/images/img_1.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 5,
                     ),
+                    itemCount: 6, // Replace with the actual number of items
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          image: const DecorationImage(
+                            image: AssetImage('assets/images/img_1.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -198,11 +188,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Divider _buildDivider() {
-    return const Divider(
-      color: Colors.black87,
-      thickness: 1,
-      height: 20,
+  Container _buildCustomDivider() {
+    return Container(
+      width: 2,
+      height: 40,
+      color: Colors.blueGrey,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
     );
   }
 }

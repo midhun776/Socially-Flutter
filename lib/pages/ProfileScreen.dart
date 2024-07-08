@@ -23,6 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? userDetails;
 
   @override
+
   void initState() {
     super.initState();
     if (userId != null) {

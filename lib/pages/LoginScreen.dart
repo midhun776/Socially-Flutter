@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:socially/pages/AddImageScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import '../Resources/colorresources.dart';
@@ -241,10 +242,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             GestureDetector(
-                              onTap: () {
+                              onTap: () async {
+                                await _authService.loginWithGoogle();
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const AddLocation(userData: [],)),
+                                  MaterialPageRoute(builder: (context) => const AddImageScreen(userData: [],)),
                                 );
                               },
                               child: Image.asset('assets/images/google.png',
@@ -254,6 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(width: 33),
                             GestureDetector(
                               onTap: () {
+
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) => const AddLocation(userData: [],)),

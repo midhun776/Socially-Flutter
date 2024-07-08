@@ -11,7 +11,8 @@
     <application
         android:label="socially"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
 
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBQ_bgPiu0-Z66L5RejBWU1vUU_bNr1mCk"/>

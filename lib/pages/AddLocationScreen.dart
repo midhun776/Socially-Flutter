@@ -71,6 +71,8 @@ class _AddLocationState extends State<AddLocation> {
   void _addLocation() async {
     String addLocation = _addLocationController.text;
 
+    print("Datas"+widget.userData.toString());
+
     if (addLocation.isNotEmpty) {
       setState(() {
         widget.userData.add(addLocation);

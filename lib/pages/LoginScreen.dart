@@ -1,9 +1,14 @@
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:socially/pages/AddImageScreen.dart';
 import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/HomeScreen.dart';
 import '../Resources/colorresources.dart';
+import '../config.dart';
 import '../services/firebase_authentication.dart';
+import 'package:http/http.dart' as http;
 import 'AddLocationScreen.dart';
 import 'RegistrationScreen.dart';
 
@@ -28,7 +33,33 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  checkUserInMongoDB(String userId) async {
+    var reqBody = {
+      "userId": userId
+    };
 
+    print("ID:"+userId);
+    final response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    print("Response"+response.toString());
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      var userFound = jsonResponse["data"];
+      if (userFound != null) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => DashboardScreen()));
+      } else {
+        var userData = [userId, "dummy", "dummy"];
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => AddImageScreen(userData: userData)));
+      }
+    } else {
+      throw Exception('Failed to check user in MongoDB');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -243,12 +274,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             GestureDetector(
                               onTap: () async {
-                                await _authService.loginWithGoogle();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const AddImageScreen(userData: [],)),
-                                );
-                              },
+                                var result = await _authService.loginWithGoogle();
+                                if(result != null) {
+                                  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
+                                  checkUserInMongoDB(userId!);
+                                  }
+                                },
                               child: Image.asset('assets/images/google.png',
                                 height: 40, width: 40,
                               ),

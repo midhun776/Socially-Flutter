@@ -22,7 +22,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   final TextEditingController _controller = TextEditingController();
 
   void makeSuggestion(String input) async {
-    String googlePlacesApiKey = "AIzaSyB2TWHONvLIUNBz29hs82Ff7ZBWYa3Zy3Y";
+    String googlePlacesApiKey = "AIzaSyBQ_bgPiu0-Z66L5RejBWU1vUU_bNr1mCk";
     String groundURL ='https://maps.googleapis.com/maps/api/place/autocomplete/json';
     String request = '$groundURL?input=$input&key=$googlePlacesApiKey&sessiontoken=$tokenForSession';
 

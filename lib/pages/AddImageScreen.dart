@@ -235,7 +235,7 @@ class _AddImageScreenState extends State<AddImageScreen> {
         userData.add(phoneNumber);
         userData.add(imageUrlFromFirebase);
 
-        print(userData);
+        print("Data" + userData.toString());
         Navigator.push(context,
           MaterialPageRoute(
             builder: (context) => AddLocation(userData: userData),

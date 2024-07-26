@@ -201,7 +201,6 @@ class _ChatscreenState extends State<Chatscreen> {
       ),
     );
   }
-
   void getCurrentUserData(String userId) async {
     var reqBody = {"userId": userId};
     var response = await http.post(Uri.parse(findUser),

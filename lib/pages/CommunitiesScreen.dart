@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:socially/Resources/colorresources.dart';
+import 'package:socially/config.dart';
 import 'package:socially/pages/AddCommunityScreen.dart';
+import 'package:http/http.dart' as http;
+import 'package:socially/pages/ViewCommunitiesScreen.dart';
 
 class CommunitiesScreen extends StatefulWidget {
   const CommunitiesScreen({Key? key}) : super(key: key);
@@ -10,21 +15,31 @@ class CommunitiesScreen extends StatefulWidget {
   State<CommunitiesScreen> createState() => _CommunitiesScreenState();
 }
 
-class _CommunitiesScreenState extends State<CommunitiesScreen> {
-  List<Map<String, String>> items = [
-    {'name': 'Alan', 'image': 'assets/images/one.jpg'},
-    {'name': 'Sona', 'image': 'assets/images/two.jpeg'},
-    {'name': 'Nirmal', 'image': 'assets/images/three.jpeg'},
-    {'name': 'Akash', 'image': 'assets/images/one.jpg'},
-    {'name': 'Teena', 'image': 'assets/images/two.jpeg'},
-    {'name': 'Mohan', 'image': 'assets/images/one.jpg'},
-  ];
 
-  List<Map<String, String>> cardItems = [
-    {'image': 'assets/images/tCard.png','name': 'Travel', 'message': '4.3(10k+members)'},
-    {'image': 'assets/images/teCard.png','name': 'Technology', 'message': '4.1(100k+members)'},
-    {'image': 'assets/images/mCard.png','name': 'music', 'message': '4.3(20k+members)'},
-  ];
+class _CommunitiesScreenState extends State<CommunitiesScreen> {
+  List<Map<String, String>> items = [];
+
+
+  // List<Map<String, dynamic>> cardItems = [;
+
+  // void getCommunityDetails() async {
+  //   var response = await http.get(Uri.parse(communityGetApi),
+  //       headers: {"Content-Type": "application/json"});
+  //
+  //   var jsonResponse = jsonDecode(response.body);
+  //   print(jsonResponse);
+  //   setState(() {
+  //     cardItems = jsonResponse["data"];
+  //   });
+  //   print(cardItems);
+  // }
+  //
+  //
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   getCommunityDetails();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +78,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Add your onPressed code here!
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ViewCommunitiesScreen()));
                   },
                   child: Text(
                     'View All',
@@ -119,7 +134,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: cardItems.length,
+              itemCount: items.length,
               itemBuilder: (context, index) {
                 return Card(
                   elevation: 3,
@@ -131,17 +146,17 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
-                        image: AssetImage(cardItems[index]['image']!),
+                        image: AssetImage(items[index]['image']!),
                         fit: BoxFit.cover,
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            cardItems[index]['name']!,
+                            items[index]['communityName']!,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 22,
@@ -156,7 +171,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                                 color: Colors.yellow,
                               ),
                               Text(
-                                ' ${cardItems[index]['message']}',
+                                ' ${items[index]['rating']}',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,

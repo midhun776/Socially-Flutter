@@ -1,12 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/ChatScreen.dart';
-import 'package:socially/pages/DashboardScreen.dart';
-import 'package:socially/pages/HomeScreen.dart';
-import 'package:socially/config.dart'; // Import your config file
+import 'package:http/http.dart' as http;
+import '../config.dart';
 
 class Chatinboxscreen extends StatefulWidget {
   const Chatinboxscreen({super.key});
@@ -16,8 +14,7 @@ class Chatinboxscreen extends StatefulWidget {
 }
 
 class _ChatinboxscreenState extends State<Chatinboxscreen> {
-  late String userId;
-  late Map<String, dynamic> userData;
+  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
   List<Map<String, dynamic>> chatList = [];
 
   final List<String> chatcategories = [
@@ -26,48 +23,14 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
     "Communities",
   ];
 
-  int selectedIndex = 0; // Initialize with 0 indicating the first category is selected
+  int selectedIndex = 0; // Initialize with 0 indicating first category is selected
   int selectedChatIndex = -1; // Initialize with -1 indicating no chat selected
 
   @override
   void initState() {
     super.initState();
-    getCurrentUser();
-  }
-
-  Future<void> getCurrentUser() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        userId = user.uid;
-        await fetchUserData();
-      }
-    } catch (e) {
-      print("Error getting current user: $e");
-    }
-  }
-
-  Future<void> fetchUserData() async {
-    try {
-      final response = await http.post(
-        Uri.parse(findUser), // Use the findUser endpoint
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': userId}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          userData = data['data'];
-          chatList = userData['chats']; // Assuming the response contains a list of chats
-        });
-      } else {
-        // Handle error
-        throw Exception('Failed to load user data');
-      }
-    } catch (error) {
-      // Handle error
-      print('Error fetching user data: $error');
+    if (userId != null) {
+      getUserData(userId!);
     }
   }
 
@@ -100,7 +63,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
           Padding(
             padding: const EdgeInsets.only(left: 15, top: 10),
             child: Container(
-              height: 43,
+              height: 43, // Adjust height to fit the text containers
               margin: EdgeInsets.symmetric(vertical: 8.0),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -109,7 +72,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedIndex = index;
+                        selectedIndex = index; // Update selected index on tap
                       });
                     },
                     child: Container(
@@ -117,14 +80,16 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                       margin: EdgeInsets.symmetric(horizontal: 8.0),
                       decoration: BoxDecoration(
                         color: selectedIndex == index
-                            ? ColorResources.SecondaryColor
-                            : ColorResources.PrimaryColor,
+                            ? ColorResources.SecondaryColor // Change to desired color when selected
+                            : ColorResources.PrimaryColor, // Original color
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Center(
                         child: Text(
                           chatcategories[index],
-                          style: TextStyle(color: selectedIndex == index ? Colors.white : Colors.black),
+                          style: TextStyle(
+                            color: selectedIndex == index ? Colors.white : Colors.black,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -136,18 +101,18 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
           ),
           Expanded(
             child: Container(
-              color: Colors.white,
+              color: Colors.white, // Set the background color to white
               child: ListView.builder(
                 itemCount: chatList.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedChatIndex = index;
+                        selectedChatIndex = index; // Update selected chat index on tap
                       });
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const Chatscreen()),
+                        MaterialPageRoute(builder: (context) => Chatscreen(chatDetails: chatList[index])),
                       );
                     },
                     child: Container(
@@ -155,10 +120,10 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                       padding: EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
                         color: selectedChatIndex == index
-                            ? ColorResources.ContainerColor
-                            : Colors.white,
+                            ? ColorResources.ContainerColor // Change to desired color when selected
+                            : Colors.white, // Original color
                         border: Border.all(color: Colors.grey[300]!, width: 1),
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -166,8 +131,10 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                           Row(
                             children: [
                               CircleAvatar(
-                                radius: 30,
-                                backgroundImage: NetworkImage(chatList[index]['profileImage']), // Use NetworkImage for dynamic images
+                                  radius: 30,
+                                  backgroundImage: chatList[index]['profileImage'] != null
+                                      ? NetworkImage(chatList[index]['profileImage'])
+                                      : AssetImage("assets/images/profilePic.png") as ImageProvider
                               ),
                               SizedBox(width: 15),
                               Column(
@@ -222,5 +189,41 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
         ],
       ),
     );
+  }
+
+  void getUserData(String userId) async {
+    var reqBody = {"userId": userId};
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    var jsonResponse = jsonDecode(response.body);
+    var userDetails = jsonResponse["data"];
+    var userChats = userDetails?["chats"];
+
+    if (userChats != null) {
+      for (var chat in userChats) {
+        fetchChatDetails(chat);
+      }
+    }
+  }
+
+  void fetchChatDetails(String userId) async {
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"userId": userId}));
+
+    var chatDetails = jsonDecode(response.body)["data"];
+    setState(() {
+      chatList.add({
+        "connectID": chatDetails["userID"],
+        "name": chatDetails["userName"],
+        "profileImage": chatDetails["userProfilePic"], // Assuming the profile image URL is available
+        "content": "Recent message preview", // Placeholder for recent message preview
+        "messages": 0, // Placeholder for unread messages count
+        "timestamp": "Just now", // Placeholder for last message timestamp
+      });
+    });
+    print(chatList);
   }
 }

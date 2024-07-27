@@ -4,3 +4,4 @@ final communityAddApi = url + "community/add" ;
 final postAddApi=url+"post/addPost";
 final findUser = url + 'findUser';
 final fetchPostApi= url+"post/getUserPosts";
+final communityGetApi = url + 'community/get';

@@ -33,7 +33,7 @@ class _AddLocationState extends State<AddLocation> {
   );
 
   void makeSuggestion(String input) async {
-    String googlePlacesApiKey = "YOUR_GOOGLE_PLACES_API_KEY"; // Replace with your actual API key
+    String googlePlacesApiKey = "AIzaSyBQ_bgPiu0-Z66L5RejBWU1vUU_bNr1mCk"; // Replace with your actual API key
     String groundURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
     String request = '$groundURL?input=$input&key=$googlePlacesApiKey&sessiontoken=$tokenForSession';
 
@@ -77,7 +77,6 @@ class _AddLocationState extends State<AddLocation> {
         widget.userData.add(_selectedLocation.latitude.toString());
         widget.userData.add(_selectedLocation.longitude.toString());
       });
-
       var reqBody = {
         "userID": widget.userData[0],
         "userEmail": widget.userData[1],

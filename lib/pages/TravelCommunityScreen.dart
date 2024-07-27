@@ -1,3 +1,7 @@
+
+
+
+
 import 'package:flutter/material.dart';
 import 'package:socially/Resources/colorresources.dart';
 
@@ -34,7 +38,7 @@ class TravelCommunityScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Handle back button press
+            Navigator.pop(context);
           },
         ),
       ),

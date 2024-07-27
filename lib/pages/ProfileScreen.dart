@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Resources/colorresources.dart';
+import 'package:http/http.dart' as http;
+import '../config.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -15,6 +19,18 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
+  Map<String, dynamic>? userDetails;
+
+  @override
+
+  void initState() {
+    super.initState();
+    if (userId != null) {
+      getUserData(userId!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +43,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Action to be performed on arrow button press
             Navigator.pop(context);
           },
         ),
@@ -36,7 +51,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-
             Container(
               width: MediaQuery.of(context).size.width,
               margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
@@ -50,16 +64,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   topLeft: Radius.circular(10),
                 ),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/images/img.png'),
+                    backgroundImage: userDetails != null && userDetails!['userProfilePic'] != null
+                        ? NetworkImage(userDetails!['userProfilePic'])
+                        : const AssetImage('assets/images/profilePic.png') as ImageProvider,
                   ),
                 ],
               ),
             ),
-
             // Profile Header
             Container(
               width: MediaQuery.of(context).size.width,
@@ -77,29 +92,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 10),
-                  const Text(
-                    'Thomas R.',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Text(
+                    userDetails != null ? userDetails!['userName'] ?? 'Unknown' : 'Loading...',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on,
                         color: Colors.grey,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'Massachusetts, USA',
-                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                        userDetails != null ? userDetails!['location'] ?? 'Unknown' : 'Loading...',
+                        style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    '"Meet Jacob: Dreamer, Achiever,\nHarvard Student "',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(
@@ -121,57 +130,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-
-            // Stats and Grid View in Row
+            // Stats and Grid View in Column
             Container(
-              //color: ColorResources.GridStatRowColor, // Background color for Stats and Grid View
               width: MediaQuery.of(context).size.width,
               margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Stats Column
+                  // Stats Row
                   Container(
                     decoration: BoxDecoration(
                       color: ColorResources.PrimaryColor, // Background color for stats column
-                      borderRadius: BorderRadius.circular(10), // Border radius for stats column
+                      borderRadius: BorderRadius.circular(8), // Border radius for stats column
                     ),
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
+                    padding: const EdgeInsets.all(18.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatColumn('6', 'Posts'),
-                        _buildDivider(), // Divider after Posts
-                        _buildStatColumn('528', 'Following'),
-                        _buildDivider(), // Divider after Following
-                        _buildStatColumn('1.2K', 'Followers'),
+                        _buildStatColumn(userDetails?['posts']?.toString() ?? '0', 'Posts'),
+                        _buildCustomDivider(), // Custom divider after Posts
+                        _buildStatColumn(userDetails?['connections']?.length.toString() ?? '0', 'Connections'),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16), // Space between stats and grid
+                  const SizedBox(height: 12), // Space between stats and grid
                   // Grid View for Photos
-                  Expanded(
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 5,
-                        mainAxisSpacing: 5,
-                      ),
-                      itemCount: 6, // Replace with the actual number of items
-                      itemBuilder: (context, index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            image: const DecorationImage(
-                              image: AssetImage('assets/images/img_1.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 5,
                     ),
+                    itemCount: 6, // Replace with the actual number of items
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          image: const DecorationImage(
+                            image: AssetImage('assets/images/img_1.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -198,11 +202,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Divider _buildDivider() {
-    return const Divider(
-      color: Colors.black87,
-      thickness: 1,
-      height: 20,
+  Container _buildCustomDivider() {
+    return Container(
+      width: 2,
+      height: 40,
+      color: Colors.blueGrey,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
     );
+  }
+
+  void getUserData(String userId) async {
+    var reqBody = {"userId": userId};
+    print(userId);
+
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    print(userId);
+    print(response);
+
+    var jsonResponse = jsonDecode(response.body);
+    print(jsonResponse);
+    setState(() {
+      userDetails = jsonResponse["data"];
+    });
+    var userConnectionCount = userDetails?["connections"]?.length ?? 0;
+    var userChats = userDetails?["chats"];
+    print(userConnectionCount);
+    print(userDetails);
+
   }
 }

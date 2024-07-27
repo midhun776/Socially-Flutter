@@ -1,7 +1,14 @@
+import 'dart:convert';
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:socially/Resources/colorresources.dart';
+import 'package:socially/config.dart';
 import 'package:socially/pages/AddCommunityScreen.dart';
+import 'package:http/http.dart' as http;
+import 'package:socially/pages/TravelCommunityScreen.dart';
+import 'package:socially/pages/ViewCommunitiesScreen.dart';
 
 class CommunitiesScreen extends StatefulWidget {
   const CommunitiesScreen({Key? key}) : super(key: key);
@@ -10,21 +17,70 @@ class CommunitiesScreen extends StatefulWidget {
   State<CommunitiesScreen> createState() => _CommunitiesScreenState();
 }
 
-class _CommunitiesScreenState extends State<CommunitiesScreen> {
-  List<Map<String, String>> items = [
-    {'name': 'Alan', 'image': 'assets/images/one.jpg'},
-    {'name': 'Sona', 'image': 'assets/images/two.jpeg'},
-    {'name': 'Nirmal', 'image': 'assets/images/three.jpeg'},
-    {'name': 'Akash', 'image': 'assets/images/one.jpg'},
-    {'name': 'Teena', 'image': 'assets/images/two.jpeg'},
-    {'name': 'Mohan', 'image': 'assets/images/one.jpg'},
-  ];
 
-  List<Map<String, String>> cardItems = [
-    {'image': 'assets/images/tCard.png','name': 'Travel', 'message': '4.3(10k+members)'},
-    {'image': 'assets/images/teCard.png','name': 'Technology', 'message': '4.1(100k+members)'},
-    {'image': 'assets/images/mCard.png','name': 'music', 'message': '4.3(20k+members)'},
-  ];
+class _CommunitiesScreenState extends State<CommunitiesScreen> {
+  List<dynamic> allItems = [];
+  List<dynamic> cardItems = [];
+
+  void getCommunityDetails() async {
+    var response = await http.get(Uri.parse(communityGetApi),
+        headers: {"Content-Type": "application/json"});
+
+    var jsonResponse = jsonDecode(response.body);
+    print(jsonResponse["data"]);
+    setState(() {
+      allItems = jsonResponse["data"];
+    });
+    print(allItems);
+  }
+
+  String findOverallRating(List<dynamic> ratingList) {
+    num ratingSum = 0;
+    print(ratingList);
+    for(var i=0; i < ratingList.length; i++) {
+      ratingSum = ratingSum + double.parse(ratingList[i]);
+    }
+    print(ratingSum);
+    double overallRating = ratingSum/ratingList.length;
+    return "${overallRating.toStringAsFixed(1)}";
+  }
+
+  Future<void> getTopCommunityDetails() async {
+    var response = await http.get(
+      Uri.parse(communityGetApi), // Replace with your API URL
+      headers: {"Content-Type": "application/json"},
+    );
+
+    var jsonResponse = jsonDecode(response.body);
+    List<Map<String, dynamic>> communities = List<Map<String, dynamic>>.from(jsonResponse["data"]);
+
+    // Calculate average ratings
+    for (var community in communities) {
+      List<dynamic> ratings = community['rating'] ?? [];
+      double averageRating = double.parse(findOverallRating(ratings));
+      community['averageRating'] = averageRating.toString(); // Store as String
+    }
+
+    // Sort based on the double value of the string
+    communities.sort((a, b) {
+      double ratingA = double.parse(a['averageRating']);
+      double ratingB = double.parse(b['averageRating']);
+      return ratingB.compareTo(ratingA); // Sort in descending order
+    });
+    print("DATAS"+communities.toString());
+
+    setState(() {
+      cardItems = communities;
+    });
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    getCommunityDetails();
+    getTopCommunityDetails();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +94,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
         actions: [
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => AddCommunityScreen()));
+            getCommunityDetails();
           }, icon: Icon(Icons.group_add)),
           SizedBox(width: 10)
         ],
@@ -63,7 +120,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Add your onPressed code here!
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ViewCommunitiesScreen()));
                   },
                   child: Text(
                     'View All',
@@ -83,7 +140,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
               height: 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: items.length,
+                itemCount: allItems.length < 10  ? allItems.length : 10,
                 itemBuilder: (context, index) {
                   return Container(
                     width: 100,
@@ -91,18 +148,36 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundImage: NetworkImage(items[index]['image']!),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TravelCommunityScreen()),
+                            );
+                          },
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundImage: allItems[index]['communityImage'] != null
+                                ? NetworkImage(allItems[index]['communityImage'])
+                                : AssetImage('assets/images/allCommunityOrange.png') as ImageProvider,
+                          ),
                         ),
                         SizedBox(height: 5),
-                        Text(items[index]['name']!),
+                        Text(
+                          allItems[index]['communityName']!,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
                   );
                 },
               ),
             ),
+
           ),
           const SizedBox(height: 4),
           const Padding(
@@ -119,7 +194,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: cardItems.length,
+              itemCount: cardItems.length < 3  ? cardItems.length : 3,
               itemBuilder: (context, index) {
                 return Card(
                   elevation: 3,
@@ -131,17 +206,19 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
-                        image: NetworkImage(cardItems[index]['image']!),
+                        image: cardItems[index]['communityImage'] != null
+                            ? NetworkImage(cardItems[index]['communityImage'])
+                            : AssetImage('assets/images/communityPic.png') as ImageProvider,
                         fit: BoxFit.cover,
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            cardItems[index]['name']!,
+                            cardItems[index]['communityName']!,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 22,
@@ -156,7 +233,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                                 color: Colors.yellow,
                               ),
                               Text(
-                                ' ${cardItems[index]['message']}',
+                                findOverallRating(cardItems[index]['rating']),
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,
@@ -167,7 +244,10 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                           SizedBox(height: 5),
                           ElevatedButton(
                             onPressed: () {
-                              // Add your onPressed code here!
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => TravelCommunityScreen()),
+                              );
                             },
                             child: Text('View Community',
                               style: TextStyle(

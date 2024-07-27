@@ -1,51 +1,77 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:async';
 import 'package:socially/Resources/colorresources.dart';
-
-import '../Models/MessageModel.dart';
+import 'package:http/http.dart' as http;
+import '../config.dart';
 
 class Chatscreen extends StatefulWidget {
-  const Chatscreen({super.key});
+  final Map<String, dynamic> chatDetails;
+
+  const Chatscreen({super.key, required this.chatDetails});
 
   @override
   _ChatscreenState createState() => _ChatscreenState();
 }
 
 class _ChatscreenState extends State<Chatscreen> {
+  List<Map<String, dynamic>> chatList = [];
+  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? currentUserId;
+  late String currentUserName;
+  late String receiverUserName;
+
+  DocumentReference? chatDoc = null;
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    getCurrentUserData(currentUserId!);
+    getReceiverUserData(widget.chatDetails["connectID"]);
+    getOrCreateChat();
   }
 
-  void _sendMessage() async {
-    if (_controller.text.isNotEmpty) {
-      var currentUser = _auth.currentUser;
+  Future<void> getOrCreateChat() async {
+    var chatsCollection = FirebaseFirestore.instance.collection('chats');
+    var chatQuery = await chatsCollection
+        .where('participants', arrayContains: currentUserId)
+        .get();
 
-      if (currentUser != null) {
-        MessageModel message = MessageModel(
-          sender: currentUser.email,
-          text: _controller.text,
-          seen: false,
-          createdon: DateTime.now(),
-        );
+    bool chatFound = false;
 
-        await _firestore.collection('chatrooms').doc(currentUser.uid+"").collection('messages').add(message.toMap());
-
-        setState(() {
-          _controller.clear();
-        });
-
-        // Scroll to the bottom after adding a new message
-        _scrollToBottom();
+    for (var doc in chatQuery.docs) {
+      var participants = doc['participants'] as List<dynamic>;
+      if (participants.contains(widget.chatDetails['connectID'])) {
+        chatDoc = doc.reference;
+        chatFound = true;
+        break;
       }
+    }
+
+    if (!chatFound) {
+      chatDoc = await chatsCollection.add({
+        'participants': [currentUserId, widget.chatDetails['connectID']],
+      });
+    }
+
+    setState(() {}); // Refresh UI after getting chatDoc
+  }
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty && chatDoc != null) {
+      chatDoc?.collection('messages').add({
+        'senderId': currentUserId,
+        'text': _controller.text,
+        'timestamp': FieldValue.serverTimestamp(),
+        'seen': false,
+      });
+
+      _controller.clear();
+      _scrollToBottom();
     }
   }
 
@@ -55,18 +81,6 @@ class _ChatscreenState extends State<Chatscreen> {
       duration: Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
-  }
-
-  Stream<List<MessageModel>> _getMessages() {
-    return _firestore
-        .collection('chatrooms')
-        .doc('your_chatroom_id')
-        .collection('messages')
-        .orderBy('createdon', descending: false)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-        .map((doc) => MessageModel.fromMap(doc.data() as Map<String, dynamic>))
-        .toList());
   }
 
   @override
@@ -80,13 +94,20 @@ class _ChatscreenState extends State<Chatscreen> {
             Navigator.pop(context);
           },
         ),
-        title: const Row(
+        title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage('assets/images/user3.jpeg'),
+              backgroundImage: widget.chatDetails['profileImage'] != null
+                  ? NetworkImage(widget.chatDetails['profileImage'])
+                  : AssetImage('assets/images/profilePic.png') as ImageProvider,
             ),
             SizedBox(width: 10),
-            Text('Alice'),
+            Expanded(  // Wrap Text widget in Expanded
+              child: Text(
+                widget.chatDetails['name'],
+                overflow: TextOverflow.ellipsis, // Add ellipsis
+              ),
+            ),
           ],
         ),
         actions: [
@@ -109,29 +130,38 @@ class _ChatscreenState extends State<Chatscreen> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Expanded(
-            child: StreamBuilder<List<MessageModel>>(
-              stream: _getMessages(),
+            child: chatDoc != null
+                ? StreamBuilder<QuerySnapshot>(
+              stream: chatDoc?.collection('messages')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return Center(child: CircularProgressIndicator());
                 }
 
-                List<MessageModel> messages = snapshot.data!;
+                var messages = snapshot.data!.docs;
 
                 return ListView.builder(
+                  reverse: true,
                   controller: _scrollController,
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    var message = messages[index];
+                    var messageData = messages[index].data() as Map<String, dynamic>;
+                    var isCurrentUser = messageData['senderId'] == currentUserId;
+                    var messageText = messageData['text'];
+                    var messageSender = messageData['senderId'];
+
                     return MessageBubble(
-                      msgText: message.text!,
-                      msgSender: message.sender!,
-                      user: message.sender == _auth.currentUser?.email,
+                      msgText: messageText,
+                      msgSender: isCurrentUser ? currentUserName : receiverUserName,
+                      user: isCurrentUser,
                     );
                   },
                 );
               },
-            ),
+            )
+                : Center(child: CircularProgressIndicator()),
           ),
           Container(
             color: ColorResources.PrimaryColor,
@@ -171,6 +201,50 @@ class _ChatscreenState extends State<Chatscreen> {
       ),
     );
   }
+  void getCurrentUserData(String userId) async {
+    var reqBody = {"userId": userId};
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    var jsonResponse = jsonDecode(response.body);
+    var userDetails = jsonResponse["data"];
+    setState(() {
+      currentUserName = userDetails["userName"];
+    });
+  }
+
+  void getReceiverUserData(String userId) async {
+    var reqBody = {"userId": userId};
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    var jsonResponse = jsonDecode(response.body);
+    var userDetails = jsonResponse["data"];
+    setState(() {
+      receiverUserName = userDetails["userName"];
+    });
+  }
+
+  void fetchChatDetails(String userId) async {
+    var response = await http.post(Uri.parse(findUser),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"userId": userId}));
+
+    var chatDetails = jsonDecode(response.body)["data"];
+    setState(() {
+      chatList.add({
+        "connectID": chatDetails["userID"],
+        "name": chatDetails["userName"],
+        "profileImage": chatDetails["userProfilePic"], // Assuming the profile image URL is available
+        "content": "Recent message preview", // Placeholder for recent message preview
+        "messages": 0, // Placeholder for unread messages count
+        "timestamp": "Just now", // Placeholder for last message timestamp
+      });
+    });
+    print(chatList);
+  }
 }
 
 class MessageBubble extends StatelessWidget {
@@ -178,22 +252,24 @@ class MessageBubble extends StatelessWidget {
   final String msgSender;
   final bool user;
 
-  MessageBubble({required this.msgText, required this.msgSender, required this.user});
+  MessageBubble(
+      {required this.msgText, required this.msgSender, required this.user});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: Column(
-        crossAxisAlignment:
-        user ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: user ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: Text(
               msgSender,
               style: const TextStyle(
-                  fontSize: 13, color: Colors.black87),
+                fontSize: 13,
+                color: Colors.black87,
+              ),
             ),
           ),
           Material(

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../config.dart';
 
 class ViewCommunitiesScreen extends StatefulWidget {
   const ViewCommunitiesScreen({super.key});
@@ -9,25 +13,41 @@ class ViewCommunitiesScreen extends StatefulWidget {
 
 class _ViewCommunitiesScreenState extends State<ViewCommunitiesScreen> {
   final TextEditingController _controller = TextEditingController();
+  List<dynamic> cardItems = [];
+  List<dynamic> filteredItems = [];
 
-  List<Map<String, String>> cardItems = [
-    {'image': 'assets/images/tCard.png','name': 'Travel', 'message': '4.3(10k+members)'},
-    {'image': 'assets/images/teCard.png','name': 'Technology', 'message': '4.1(100k+members)'},
-    {'image': 'assets/images/mCard.png','name': 'Music', 'message': '4.3(20k+members)'},
-  ];
+  void getCommunityDetails() async {
+    var response = await http.get(Uri.parse(communityGetApi),
+        headers: {"Content-Type": "application/json"});
 
-  List<Map<String, String>> filteredItems = [];
+    var jsonResponse = jsonDecode(response.body);
+    setState(() {
+      cardItems = jsonResponse["data"];
+      filteredItems = cardItems; // Initialize filteredItems
+    });
+  }
+
+  String findOverallRating(List<dynamic> ratingList) {
+    num ratingSum = 0;
+    print(ratingList);
+    for(var i=0; i < ratingList.length; i++) {
+      ratingSum = ratingSum + double.parse(ratingList[i]);
+    }
+    print(ratingSum);
+    double overallRating = ratingSum/ratingList.length;
+    return "${overallRating.toStringAsFixed(1)}";
+  }
 
   @override
   void initState() {
     super.initState();
-    filteredItems = cardItems;
-    _controller.addListener(_filterItems);
+    getCommunityDetails();
+    _controller.addListener(_filterItems); // Add listener for search
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_filterItems);
+    _controller.removeListener(_filterItems); // Remove listener
     _controller.dispose();
     super.dispose();
   }
@@ -36,18 +56,18 @@ class _ViewCommunitiesScreenState extends State<ViewCommunitiesScreen> {
     String query = _controller.text.toLowerCase();
     setState(() {
       filteredItems = cardItems.where((item) {
-        return item['name']!.toLowerCase().contains(query);
+        return item['communityName']!.toLowerCase().contains(query);
       }).toList();
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5),
-          child:  Text('All Communities',
-              textAlign:TextAlign.start),
+          child: const Text('All Communities', textAlign: TextAlign.start),
         ),
       ),
       body: Column(
@@ -58,8 +78,7 @@ class _ViewCommunitiesScreenState extends State<ViewCommunitiesScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(30),
               color: const Color(0xFFFFFFFF),
-              border: Border.all(
-                  color: const Color(0xFF456B1F), width: 2), // Border color
+              border: Border.all(color: const Color(0xFF456B1F), width: 2), // Border color
             ),
             child: TextField(
               controller: _controller,
@@ -71,16 +90,16 @@ class _ViewCommunitiesScreenState extends State<ViewCommunitiesScreen> {
               ),
             ),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           Expanded(
             child: ListView.builder(
               itemCount: filteredItems.length,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1,horizontal: 5),
+                  padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 5),
                   child: Card(
                     elevation: 3,
-                    margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -88,7 +107,9 @@ class _ViewCommunitiesScreenState extends State<ViewCommunitiesScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         image: DecorationImage(
-                          image: AssetImage(filteredItems[index]['image']!),
+                          image: filteredItems[index]['communityImage'] != null
+                              ? NetworkImage(filteredItems[index]['communityImage'])
+                              : AssetImage('assets/images/communityPic.png') as ImageProvider,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -101,24 +122,24 @@ class _ViewCommunitiesScreenState extends State<ViewCommunitiesScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  filteredItems[index]['name']!,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 22,
-                                      color: Colors.white,
-                                      letterSpacing: 1.8
+                                  filteredItems[index]['communityName']!,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 22,
+                                    color: Colors.white,
+                                    letterSpacing: 1.8,
                                   ),
                                 ),
-                                SizedBox(height: 5),
+                                const SizedBox(height: 5),
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.star,
                                       color: Colors.yellow,
                                     ),
                                     Text(
-                                      ' ${filteredItems[index]['message']}',
-                                      style: TextStyle(
+                                      findOverallRating(cardItems[index]['rating']),
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         color: Colors.white,
                                       ),
@@ -131,11 +152,13 @@ class _ViewCommunitiesScreenState extends State<ViewCommunitiesScreen> {
                               onPressed: () {
                                 // Add your onPressed code here!
                               },
-                              child: Text('View ',
+                              child: const Text(
+                                'View',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Color(0xFF618F00),
-                                ),),
+                                ),
+                              ),
                             ),
                           ],
                         ),

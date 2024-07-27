@@ -294,7 +294,7 @@ class _AddCommunityScreenState extends State<AddCommunityScreen> {
       "communityCreator": user,
       "members": [],
       "tagline": tagline,
-      "rating": [],
+      "rating": ["0"],
       "about": about,
       "communityImage": imageUrlFromFirebase
     };

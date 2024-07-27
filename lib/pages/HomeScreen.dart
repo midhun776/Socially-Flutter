@@ -24,26 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    print("hi");
     fetchFeedPosts();
-  }
-
-  Future<void> fetchFeedPosts() async {
-
-    var reqBody = {
-      "userId": userId
-    };
-
-    var response = await http.post(Uri.parse(fetchPostApi),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(reqBody));
-
-    var jsonResponse = jsonDecode(response.body);
-    print(jsonResponse);
-    var userPosts = jsonResponse["data"];
-
-    setState(() {
-      feedPosts =  userPosts;
-    });
   }
 
   @override
@@ -191,19 +173,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 26.0, top: 8.0),
                                   child: CircleAvatar(
-                                    backgroundImage: NetworkImage(post['userId']['userProfilePic']),
+                                    backgroundImage: NetworkImage(post['userProfilePic']),
                                     radius: 22.0,
                                   ),
                                 ),
                                 SizedBox(width: 14.0),
                                 Text(
-                                  post['userId']['userName'],
+                                  post['userName'],
                                   style: TextStyle(fontSize: 20.0),
                                 ),
                               ],
                             ),
                             SizedBox(height: 15.0),
-                            post['image'] != null
+                            post['image'] != ""
                                 ? Image.network(post['image'])
                                 : Container(),
                             SizedBox(height: 15.0),
@@ -215,8 +197,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.only(left: 24.0),
                               child: Row(
                                 children: [
-                                  IconButton(onPressed: () {}, icon: Icon(CustomIcons.vector__4_)),
-                                  Text("${post['likes'].length}"),
+                                  IconButton(onPressed: () {
+                                    print(post["image"]);}, icon: Icon(CustomIcons.vector__4_)),
+                                  Text("5"),
                                 ],
                               ),
                             ),
@@ -257,5 +240,30 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(userDetails.toString())),
     );
+  }
+
+  void fetchFeedPosts() async {
+
+
+    print("hi2");
+
+    var reqBody = {
+      "userId": userId
+    };
+
+    var response = await http.post(Uri.parse(fetchPostApi),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    var jsonResponse = jsonDecode(response.body);
+    print(jsonResponse);
+    List<dynamic> userPosts = jsonResponse["data"];
+
+    setState(() {
+      feedPosts =  userPosts;
+    });
+
+
+    print("hi3");
   }
 }

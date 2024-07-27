@@ -71,15 +71,12 @@ class _AddLocationState extends State<AddLocation> {
   void _addLocation() async {
     String addLocation = _addLocationController.text;
 
-    print("Datas"+widget.userData.toString());
-
     if (addLocation.isNotEmpty) {
       setState(() {
         widget.userData.add(addLocation);
         widget.userData.add(_selectedLocation.latitude.toString());
         widget.userData.add(_selectedLocation.longitude.toString());
       });
-
       var reqBody = {
         "userID": widget.userData[0],
         "userEmail": widget.userData[1],

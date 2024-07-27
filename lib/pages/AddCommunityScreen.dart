@@ -1,5 +1,10 @@
 import 'dart:convert';
 
+
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +23,49 @@ class _AddCommunityScreenState extends State<AddCommunityScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _taglineController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
+
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  String imageUrlFromFirebase = "";
+
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+      await _uploadImage(_image!, pickedFile!.name);
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
+  Future<void> _uploadImage(File image, String fileName) async {
+    try {
+      String? userId = FirebaseAuth.instance.currentUser?.uid.toString();
+      if (userId != null) {
+        String extension = path.extension(fileName);
+        String basename = path.basename(fileName);
+        Reference ref = _storage.ref().child('community_images').child('$basename$extension');
+        UploadTask uploadTask = ref.putFile(image);
+        TaskSnapshot snapshot = await uploadTask;
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        print('Image URL: $downloadUrl');
+        setState(() {
+          imageUrlFromFirebase = downloadUrl;
+        });
+        // You can now save this URL to the Firestore user document or use it directly
+      } else {
+        print('No user signed in.');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+    }
+  }
 
 
   @override
@@ -63,15 +111,57 @@ class _AddCommunityScreenState extends State<AddCommunityScreen> {
         
               ),
               const SizedBox(height: 5),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Image.asset(
-                    "assets/images/community_vector.png",
-                    width: 300,
+              // Center(
+              //   child: Padding(
+              //     padding: const EdgeInsets.symmetric(horizontal: 8),
+              //     child: Image.asset(
+              //       "assets/images/community_vector.png",
+              //       width: 300,
+              //     ),
+              //   ),
+              // ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0), // Adjust the radius as needed for rounded corners
+                            child: Container(
+                              height: 160, // Adjust height as needed
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: _image != null ? FileImage(_image!) : AssetImage('assets/images/communityImg.png') as ImageProvider,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 10,
+                          right: 10,
+                          child: InkWell(
+                            onTap: _pickImage,
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: ColorResources.SecondaryColor,
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
+
               const SizedBox(height: 5),
         
               Padding(
@@ -206,6 +296,7 @@ class _AddCommunityScreenState extends State<AddCommunityScreen> {
       "tagline": tagline,
       "rating": [],
       "about": about,
+      "communityImage": imageUrlFromFirebase
     };
 
     var response = await http.post(Uri.parse(communityAddApi),

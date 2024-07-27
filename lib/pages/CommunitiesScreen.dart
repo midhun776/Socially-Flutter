@@ -17,29 +17,33 @@ class CommunitiesScreen extends StatefulWidget {
 
 
 class _CommunitiesScreenState extends State<CommunitiesScreen> {
-  List<Map<String, String>> items = [];
+  List<Map<String, String>> items = [
+    {'image': 'assets/images/tCard.png','name': 'Travel', 'message': '4.3(10k+members)'},
+    {'image': 'assets/images/teCard.png','name': 'Technology', 'message': '4.1(100k+members)'},
+    {'image': 'assets/images/mCard.png','name': 'Music', 'message': '4.3(20k+members)'},
+  ];
 
 
-  // List<Map<String, dynamic>> cardItems = [;
+  List<dynamic> cardItems = [];
 
-  // void getCommunityDetails() async {
-  //   var response = await http.get(Uri.parse(communityGetApi),
-  //       headers: {"Content-Type": "application/json"});
-  //
-  //   var jsonResponse = jsonDecode(response.body);
-  //   print(jsonResponse);
-  //   setState(() {
-  //     cardItems = jsonResponse["data"];
-  //   });
-  //   print(cardItems);
-  // }
-  //
-  //
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   getCommunityDetails();
-  // }
+  void getCommunityDetails() async {
+    var response = await http.get(Uri.parse(communityGetApi),
+        headers: {"Content-Type": "application/json"});
+
+    var jsonResponse = jsonDecode(response.body);
+    print(jsonResponse["data"]);
+    setState(() {
+      cardItems = jsonResponse["data"];
+    });
+    print(cardItems);
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    getCommunityDetails();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +57,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
         actions: [
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => AddCommunityScreen()));
+            getCommunityDetails();
           }, icon: Icon(Icons.group_add)),
           SizedBox(width: 10)
         ],
@@ -134,7 +139,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: items.length,
+              itemCount: cardItems.length,
               itemBuilder: (context, index) {
                 return Card(
                   elevation: 3,
@@ -146,7 +151,9 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
-                        image: AssetImage(items[index]['image']!),
+                        image: cardItems[index]['communityImage'] != null
+                            ? NetworkImage(cardItems[index]['communityImage'])
+                            : AssetImage('assets/images/communityPic.png') as ImageProvider,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -156,7 +163,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            items[index]['communityName']!,
+                            cardItems[index]['communityName']!,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 22,
@@ -171,7 +178,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                                 color: Colors.yellow,
                               ),
                               Text(
-                                ' ${items[index]['rating']}',
+                                ' ${cardItems[index]['rating']}',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,

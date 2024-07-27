@@ -131,7 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       FloatingActionButton(
         backgroundColor: ColorResources.SecondaryColor,
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>AddPostScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>AddPostScreen(userData: [],)));
         },
             child: Icon(Icons.add, color: ColorResources.PrimaryColor,),
         elevation: 2.0,  // Adjust elevation as needed

@@ -93,7 +93,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                       children: [
                         CircleAvatar(
                           radius: 40,
-                          backgroundImage: AssetImage(items[index]['image']!),
+                          backgroundImage: NetworkImage(items[index]['image']!),
                         ),
                         SizedBox(height: 5),
                         Text(items[index]['name']!),
@@ -131,7 +131,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
-                        image: AssetImage(cardItems[index]['image']!),
+                        image: NetworkImage(cardItems[index]['image']!),
                         fit: BoxFit.cover,
                       ),
                     ),

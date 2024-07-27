@@ -7,6 +7,7 @@ import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/config.dart';
 import 'package:socially/pages/AddCommunityScreen.dart';
 import 'package:http/http.dart' as http;
+import 'package:socially/pages/TravelCommunityScreen.dart';
 import 'package:socially/pages/ViewCommunitiesScreen.dart';
 
 class CommunitiesScreen extends StatefulWidget {
@@ -151,7 +152,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => AddCommunityScreen()),
+                              MaterialPageRoute(builder: (context) => TravelCommunityScreen()),
                             );
                           },
                           child: CircleAvatar(
@@ -243,7 +244,10 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                           SizedBox(height: 5),
                           ElevatedButton(
                             onPressed: () {
-                              // Add your onPressed code here!
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => TravelCommunityScreen()),
+                              );
                             },
                             child: Text('View Community',
                               style: TextStyle(

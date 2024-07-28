@@ -1,10 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:socially/Resources/colorresources.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import '../config.dart';
+import 'package:socially/Resources/colorresources.dart';
+
+import 'ImageConfirmScreen.dart';
 
 class Chatscreen extends StatefulWidget {
   final Map<String, dynamic> chatDetails;
@@ -17,14 +23,13 @@ class Chatscreen extends StatefulWidget {
 
 class _ChatscreenState extends State<Chatscreen> {
   List<Map<String, dynamic>> chatList = [];
-  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? currentUserId;
   late String currentUserName;
   late String receiverUserName;
 
-  DocumentReference? chatDoc = null;
+  DocumentReference? chatDoc;
 
   @override
   void initState() {
@@ -61,9 +66,9 @@ class _ChatscreenState extends State<Chatscreen> {
     setState(() {}); // Refresh UI after getting chatDoc
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     if (_controller.text.isNotEmpty && chatDoc != null) {
-      chatDoc?.collection('messages').add({
+      await chatDoc!.collection('messages').add({
         'senderId': currentUserId,
         'text': _controller.text,
         'timestamp': FieldValue.serverTimestamp(),
@@ -75,6 +80,43 @@ class _ChatscreenState extends State<Chatscreen> {
     }
   }
 
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageConfirmScreen(
+            imagePath: image.path,
+            onConfirm: (confirmed) async {
+              if (confirmed && chatDoc != null) {
+                File file = File(image.path);
+                try {
+                  String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+                  Reference storageReference = FirebaseStorage.instance
+                      .ref()
+                      .child('chat_images/$fileName');
+                  await storageReference.putFile(file);
+                  String imageUrl = await storageReference.getDownloadURL();
+
+                  await chatDoc!.collection('messages').add({
+                    'senderId': currentUserId,
+                    'imageUrl': imageUrl,
+                    'timestamp': FieldValue.serverTimestamp(),
+                    'seen': false,
+                  });
+                } catch (e) {
+                  print('Error uploading image: $e');
+                }
+              }
+            },
+          ),
+        ),
+      );
+    }
+  }
   void _scrollToBottom() {
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
@@ -102,10 +144,10 @@ class _ChatscreenState extends State<Chatscreen> {
                   : AssetImage('assets/images/profilePic.png') as ImageProvider,
             ),
             SizedBox(width: 10),
-            Expanded(  // Wrap Text widget in Expanded
+            Expanded(
               child: Text(
                 widget.chatDetails['name'],
-                overflow: TextOverflow.ellipsis, // Add ellipsis
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -114,7 +156,14 @@ class _ChatscreenState extends State<Chatscreen> {
           IconButton(
             icon: Icon(Icons.videocam),
             onPressed: () {
-              // Handle video call button press
+              Fluttertoast.showToast(
+                msg: "Coming Soon",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                backgroundColor: Colors.black87,
+                textColor: Colors.white,
+                fontSize: 16.0,
+              );
             },
           ),
           IconButton(
@@ -132,7 +181,7 @@ class _ChatscreenState extends State<Chatscreen> {
           Expanded(
             child: chatDoc != null
                 ? StreamBuilder<QuerySnapshot>(
-              stream: chatDoc?.collection('messages')
+              stream: chatDoc!.collection('messages')
                   .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -150,10 +199,12 @@ class _ChatscreenState extends State<Chatscreen> {
                     var messageData = messages[index].data() as Map<String, dynamic>;
                     var isCurrentUser = messageData['senderId'] == currentUserId;
                     var messageText = messageData['text'];
+                    var messageImage = messageData['imageUrl'];
                     var messageSender = messageData['senderId'];
 
                     return MessageBubble(
-                      msgText: messageText,
+                      msgText: messageText ?? '',
+                      msgImage: messageImage,
                       msgSender: isCurrentUser ? currentUserName : receiverUserName,
                       user: isCurrentUser,
                     );
@@ -169,10 +220,8 @@ class _ChatscreenState extends State<Chatscreen> {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.add_circle_outlined, color: ColorResources.SecondaryColor),
-                  onPressed: () {
-                    // Handle additional action button press
-                  },
+                  icon: Icon(Icons.image_outlined, color: ColorResources.SecondaryColor),
+                  onPressed: _pickImage,
                 ),
                 Expanded(
                   child: Container(
@@ -201,6 +250,7 @@ class _ChatscreenState extends State<Chatscreen> {
       ),
     );
   }
+
   void getCurrentUserData(String userId) async {
     var reqBody = {"userId": userId};
     var response = await http.post(Uri.parse(findUser),
@@ -226,34 +276,20 @@ class _ChatscreenState extends State<Chatscreen> {
       receiverUserName = userDetails["userName"];
     });
   }
-
-  void fetchChatDetails(String userId) async {
-    var response = await http.post(Uri.parse(findUser),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"userId": userId}));
-
-    var chatDetails = jsonDecode(response.body)["data"];
-    setState(() {
-      chatList.add({
-        "connectID": chatDetails["userID"],
-        "name": chatDetails["userName"],
-        "profileImage": chatDetails["userProfilePic"], // Assuming the profile image URL is available
-        "content": "Recent message preview", // Placeholder for recent message preview
-        "messages": 0, // Placeholder for unread messages count
-        "timestamp": "Just now", // Placeholder for last message timestamp
-      });
-    });
-    print(chatList);
-  }
 }
 
 class MessageBubble extends StatelessWidget {
   final String msgText;
+  final String? msgImage;
   final String msgSender;
   final bool user;
 
-  MessageBubble(
-      {required this.msgText, required this.msgSender, required this.user});
+  MessageBubble({
+    required this.msgText,
+    this.msgImage,
+    required this.msgSender,
+    required this.user,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -272,26 +308,44 @@ class MessageBubble extends StatelessWidget {
               ),
             ),
           ),
-          Material(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(50),
-              topLeft: user ? Radius.circular(50) : Radius.circular(0),
-              bottomRight: Radius.circular(50),
-              topRight: user ? Radius.circular(0) : Radius.circular(50),
+          if (msgImage != null)
+            Material(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(50),
+                topLeft: user ? Radius.circular(50) : Radius.circular(0),
+                bottomRight: Radius.circular(50),
+                topRight: user ? Radius.circular(0) : Radius.circular(50),
+              ),
+              color: user ? ColorResources.SecondaryColor : Colors.white,
+              elevation: 5,
+              child: Image.network(
+                msgImage!,
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
             ),
-            color: user ? ColorResources.SecondaryColor : Colors.white,
-            elevation: 5,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              child: Text(
-                msgText,
-                style: TextStyle(
-                  color: user ? Colors.white : ColorResources.SecondaryColor,
-                  fontSize: 15,
+          if (msgText.isNotEmpty && msgImage == null)
+            Material(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(50),
+                topLeft: user ? Radius.circular(50) : Radius.circular(0),
+                bottomRight: Radius.circular(50),
+                topRight: user ? Radius.circular(0) : Radius.circular(50),
+              ),
+              color: user ? ColorResources.SecondaryColor : Colors.white,
+              elevation: 5,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: Text(
+                  msgText,
+                  style: TextStyle(
+                    color: user ? Colors.white : ColorResources.SecondaryColor,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

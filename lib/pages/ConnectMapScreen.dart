@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,6 +8,8 @@ import 'package:socially/pages/LocationSearchScreen.dart';
 import 'package:socially/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:socially/pages/profile/otherprofile_screen.dart';
+
+import 'ChatInboxScreen.dart';
 
 class ConnectScreen extends StatefulWidget {
   const ConnectScreen({super.key});
@@ -180,7 +183,9 @@ class NearbyFriendsPopup extends StatelessWidget {
                   }
                 },
                 leading: CircleAvatar(
-                  backgroundImage: AssetImage('assets/images/user${index + 1}.jpg'), // Replace with actual images
+                  backgroundImage: friends[index]['userProfilePic'] != ""
+                      ? NetworkImage(friends[index]['userProfilePic'])
+                      : AssetImage("assets/images/profilePic.png") as ImageProvider, // Replace with actual images
                 ),
                 title: Text(friends[index]['userName']!, style: TextStyle(fontWeight: FontWeight.bold),),
                 subtitle: Text(friends[index]['location']!),
@@ -196,6 +201,7 @@ class NearbyFriendsPopup extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.message_outlined),
                       onPressed: () {
+                        chatsListUpdate(friends[index]["userID"], context);
                         // Handle add action
                       },
                     ),
@@ -207,5 +213,26 @@ class NearbyFriendsPopup extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void chatsListUpdate(String friendId, BuildContext context) async {
+
+    var reqBody = {
+      "userID": userId,
+      "friendId": friendId
+    };
+
+    var response = await http.post(Uri.parse(updateChats),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    print(response);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Please wait while we load you chats!')),
+    );
+
+    Timer(Duration(seconds: 3),() => Navigator.push(context, MaterialPageRoute(builder: (context) => Chatinboxscreen())));
   }
 }

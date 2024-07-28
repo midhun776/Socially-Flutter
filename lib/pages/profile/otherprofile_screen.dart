@@ -1,8 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:socially/Resources/colorresources.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 import 'package:socially/config.dart';
+import 'package:socially/pages/ChatInboxScreen.dart';
 import 'profile_header.dart';
 import 'profile_stats.dart';
 import 'profile_posts.dart';
@@ -20,6 +23,7 @@ class _OtherProfileScreenState extends State<OtherProfileScreen> {
   Map<String, dynamic>? userDetails;
   List<dynamic> allFeedPosts = [];
   List<dynamic> testList = [{}];
+  var currentUserId = FirebaseAuth.instance.currentUser?.uid.toString();
 
   @override
   void initState() {
@@ -107,7 +111,9 @@ class _OtherProfileScreenState extends State<OtherProfileScreen> {
                 ),
                 SizedBox(width: 10),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    chatsListUpdate();
+                  },
                   icon: Icon(Icons.message_outlined,
                       color: ColorResources.SelectedIconColor),
                   label: Text(
@@ -276,5 +282,26 @@ class _OtherProfileScreenState extends State<OtherProfileScreen> {
     }
 
     print("Fetched feed posts: $allFeedPosts Next: $testList");
+  }
+
+  void chatsListUpdate() async {
+
+    var reqBody = {
+      "userID": currentUserId,
+      "friendId": widget.userId
+    };
+
+    var response = await http.post(Uri.parse(updateChats),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    print(response);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Please wait while we load you chats!'))
+    );
+
+    Timer(Duration(seconds: 3),() => Navigator.push(context, MaterialPageRoute(builder: (context) => Chatinboxscreen())));
   }
 }

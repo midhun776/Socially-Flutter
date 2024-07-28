@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:socially/config.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
+import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/NotificationScreen.dart';
 import 'package:http/http.dart' as http;
+import 'package:socially/pages/profile/otherprofile_screen.dart';
 
 import '../Resources/colorresources.dart';
 import '../custom_icons_icons.dart';
@@ -18,14 +21,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var userId = FirebaseAuth.instance.currentUser?.uid.toString();
+  List<dynamic> userConnection = [];
   Map<String, dynamic>? userDetails;
-  List<dynamic> feedPosts = [];
+  List<dynamic> allFeedPosts = [];
+  List<dynamic> userFeedPosts = [];
 
   @override
   void initState() {
     super.initState();
     print("hi");
-    fetchFeedPosts();
+    getUserData(userId!);
   }
 
   @override
@@ -146,14 +151,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 SizedBox(height: 1.0),
-                feedPosts.isEmpty
-                    ? Center(child: CircularProgressIndicator())
+                allFeedPosts.isEmpty
+                    ? Column(
+                      children: [
+                        Center(child: CircularProgressIndicator()),
+                        SizedBox(height: 10,),
+                        Text("Nothing to show!")
+                      ],
+                    )
                     : ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemCount: feedPosts.length,
+                  itemCount: allFeedPosts.length,
                   itemBuilder: (context, index) {
-                    final post = feedPosts[index];
+                    final post = allFeedPosts[index];
                     return Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Card(
@@ -167,34 +178,64 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         margin: EdgeInsets.all(6.0),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 26.0, top: 8.0),
-                                  child: CircleAvatar(
-                                    backgroundImage: NetworkImage(post['userProfilePic']),
-                                    radius: 22.0,
+                            GestureDetector(
+                              onTap: () {
+                                if(post['userID'] == userId) {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => OtherProfileScreen(userId: post['userID'],)));
+                                } else {
+                                  setState(() {
+                                  });
+                                }
+                              },
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 18.0, top: 15.0),
+                                    child: CircleAvatar(
+                                      backgroundImage: NetworkImage(post['userProfilePic']),
+                                      radius: 22.0,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: 14.0),
-                                Text(
-                                  post['userName'],
-                                  style: TextStyle(fontSize: 20.0),
-                                ),
-                              ],
+                                   SizedBox(width: 14.0),
+                                  Text(
+                                    post['userName'],
+                                    style: TextStyle(fontSize: 20.0),
+                                  ),
+                                ],
+                              ),
                             ),
-                            SizedBox(height: 15.0),
-                            post['image'] != ""
-                                ? Image.network(post['image'])
-                                : Container(),
-                            SizedBox(height: 15.0),
-                            Container(
-                              padding: const EdgeInsets.only(left: 26.0),
-                              child: Text(post['caption']),
-                            ),
+
                             Padding(
-                              padding: const EdgeInsets.only(left: 24.0),
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: post['image'] != ""
+                                  ? Image.network(post['image'])
+                                  : Container(),
+                            ),
+                            // SizedBox(height: 15.0),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 18.0,bottom: 8.0),
+                              child: Container(
+
+                                child: Text(post['caption']),
+                              ),
+                            ),
+
+
+
+
+                            // Padding(
+                            //   padding: const EdgeInsets.symmetric(),
+                            //   child: Container(
+                            //     padding: const EdgeInsets.only(left: 2.0),
+                            //     child: Text(post['caption']),
+                            //   ),
+                            // ),
+
+
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0,bottom: 3.0),
                               child: Row(
                                 children: [
                                   IconButton(onPressed: () {
@@ -233,22 +274,25 @@ class _HomeScreenState extends State<HomeScreen> {
     var jsonResponse = jsonDecode(response.body);
     print(jsonResponse);
     userDetails = jsonResponse["data"];
-    var userConnection = userDetails?.remove("connections");
+    setState(() {
+      userConnection = userDetails?.remove("connections");
+    });
+    print(userConnection);
     var userChats = userDetails?.remove("chats");
     print(userConnection);
     print(userDetails);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(userDetails.toString())),
-    );
+
+    fetchFeedPosts();
   }
 
   void fetchFeedPosts() async {
+    print("Fetching feed posts");
 
-
-    print("hi2");
+    List<String> allUserIds = [userId!, ...userConnection];
+    print(allUserIds);
 
     var reqBody = {
-      "userId": userId
+      "userIds": allUserIds,
     };
 
     var response = await http.post(Uri.parse(fetchPostApi),
@@ -256,14 +300,20 @@ class _HomeScreenState extends State<HomeScreen> {
         body: jsonEncode(reqBody));
 
     var jsonResponse = jsonDecode(response.body);
-    print(jsonResponse);
-    List<dynamic> userPosts = jsonResponse["data"];
+    List<dynamic> allPosts = jsonResponse["data"];
 
-    setState(() {
-      feedPosts =  userPosts;
-    });
+    print("Posts: $allPosts");
 
+    if(allPosts[0]['userName'] == null) {
+      setState(() {
+        allFeedPosts = [];
+      });
+    } else {
+      setState(() {
+        allFeedPosts = allPosts;
+      });
+    }
 
-    print("hi3");
+    print("Fetched feed posts: $allFeedPosts");
   }
 }

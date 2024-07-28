@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:socially/Resources/colorresources.dart';
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends StatefulWidget {
+  final String userName;
+  ProfileHeader(this.userName);
+
+  @override
+  State<ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends State<ProfileHeader> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -20,7 +28,7 @@ class ProfileHeader extends StatelessWidget {
         ),
         SizedBox(height: 10),
         Text(
-          'Merin Mathew',
+          widget.userName,
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),

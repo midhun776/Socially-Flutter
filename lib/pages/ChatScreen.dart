@@ -76,7 +76,7 @@ class _ChatscreenState extends State<Chatscreen> {
       });
 
       _controller.clear();
-      _scrollToBottom();
+      // _scrollToBottom();  // Disabled auto-scroll
     }
   }
 
@@ -107,6 +107,8 @@ class _ChatscreenState extends State<Chatscreen> {
                     'timestamp': FieldValue.serverTimestamp(),
                     'seen': false,
                   });
+
+                  // _scrollToBottom();  // Disabled auto-scroll
                 } catch (e) {
                   print('Error uploading image: $e');
                 }
@@ -117,12 +119,15 @@ class _ChatscreenState extends State<Chatscreen> {
       );
     }
   }
+
   void _scrollToBottom() {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   @override

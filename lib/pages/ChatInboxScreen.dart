@@ -5,6 +5,7 @@ import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/ChatScreen.dart';
 import 'package:http/http.dart' as http;
 import '../config.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Chatinboxscreen extends StatefulWidget {
   const Chatinboxscreen({super.key});
@@ -16,6 +17,9 @@ class Chatinboxscreen extends StatefulWidget {
 class _ChatinboxscreenState extends State<Chatinboxscreen> {
   var userId = FirebaseAuth.instance.currentUser?.uid.toString();
   List<Map<String, dynamic>> chatList = [];
+  List<Map<String, dynamic>> filteredChatList = []; // For search filtering
+  bool isSearching = false;
+  String searchQuery = '';
 
   final List<String> chatcategories = [
     "All Chats",
@@ -23,8 +27,8 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
     "Communities",
   ];
 
-  int selectedIndex = 0; // Initialize with 0 indicating first category is selected
-  int selectedChatIndex = -1; // Initialize with -1 indicating no chat selected
+  int selectedIndex = 0;
+  int selectedChatIndex = -1;
 
   @override
   void initState() {
@@ -39,11 +43,36 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: ColorResources.PrimaryColor,
-        title: Text(
+        title: isSearching
+            ? TextField(
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Search...',
+            border: InputBorder.none,
+          ),
+          onChanged: (query) {
+            setState(() {
+              searchQuery = query;
+              filterChats();
+            });
+          },
+        )
+            : Text(
           "Recent Chats",
           style: TextStyle(color: Colors.black),
         ),
-        leading: IconButton(
+        leading: isSearching
+            ? IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            setState(() {
+              isSearching = false;
+              searchQuery = '';
+              filteredChatList = chatList;
+            });
+          },
+        )
+            : IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
@@ -51,9 +80,17 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(isSearching ? Icons.close : Icons.search),
             onPressed: () {
-              // Action to be performed on search icon press
+              setState(() {
+                if (isSearching) {
+                  isSearching = false;
+                  searchQuery = '';
+                  filteredChatList = chatList;
+                } else {
+                  isSearching = true;
+                }
+              });
             },
           ),
         ],
@@ -63,7 +100,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
           Padding(
             padding: const EdgeInsets.only(left: 15, top: 10),
             child: Container(
-              height: 43, // Adjust height to fit the text containers
+              height: 43,
               margin: EdgeInsets.symmetric(vertical: 8.0),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -72,7 +109,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedIndex = index; // Update selected index on tap
+                        selectedIndex = index;
                       });
                     },
                     child: Container(
@@ -80,8 +117,8 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                       margin: EdgeInsets.symmetric(horizontal: 8.0),
                       decoration: BoxDecoration(
                         color: selectedIndex == index
-                            ? ColorResources.SecondaryColor // Change to desired color when selected
-                            : ColorResources.PrimaryColor, // Original color
+                            ? ColorResources.SecondaryColor
+                            : ColorResources.PrimaryColor,
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Center(
@@ -101,18 +138,18 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
           ),
           Expanded(
             child: Container(
-              color: Colors.white, // Set the background color to white
+              color: Colors.white,
               child: ListView.builder(
-                itemCount: chatList.length,
+                itemCount: filteredChatList.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedChatIndex = index; // Update selected chat index on tap
+                        selectedChatIndex = index;
                       });
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Chatscreen(chatDetails: chatList[index])),
+                        MaterialPageRoute(builder: (context) => Chatscreen(chatDetails: filteredChatList[index])),
                       );
                     },
                     child: Container(
@@ -120,10 +157,10 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                       padding: EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
                         color: selectedChatIndex == index
-                            ? ColorResources.ContainerColor // Change to desired color when selected
-                            : Colors.white, // Original color
+                            ? ColorResources.ContainerColor
+                            : Colors.white,
                         border: Border.all(color: Colors.grey[300]!, width: 1),
-                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -131,17 +168,17 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                           Row(
                             children: [
                               CircleAvatar(
-                                  radius: 30,
-                                  backgroundImage: chatList[index]['profileImage'] != null
-                                      ? NetworkImage(chatList[index]['profileImage'])
-                                      : AssetImage("assets/images/profilePic.png") as ImageProvider
+                                radius: 30,
+                                backgroundImage: filteredChatList[index]['profileImage'] != null
+                                    ? NetworkImage(filteredChatList[index]['profileImage'])
+                                    : AssetImage("assets/images/profilePic.png") as ImageProvider,
                               ),
                               SizedBox(width: 15),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    chatList[index]['name'],
+                                    filteredChatList[index]['name'],
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -150,7 +187,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    chatList[index]['content'],
+                                    filteredChatList[index]['content'],
                                     style: TextStyle(color: Colors.grey),
                                   ),
                                 ],
@@ -161,7 +198,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                chatList[index]['timestamp'],
+                                filteredChatList[index]['timestamp'],
                                 style: TextStyle(color: Colors.grey, fontSize: 12),
                               ),
                               SizedBox(height: 5),
@@ -172,7 +209,7 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: Text(
-                                  '${chatList[index]['messages']}',
+                                  '${filteredChatList[index]['messages']}',
                                   style: TextStyle(color: Colors.white, fontSize: 12),
                                 ),
                               ),
@@ -208,22 +245,74 @@ class _ChatinboxscreenState extends State<Chatinboxscreen> {
     }
   }
 
-  void fetchChatDetails(String userId) async {
+  void fetchChatDetails(String receiverId) async {
     var response = await http.post(Uri.parse(findUser),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"userId": userId}));
+        body: jsonEncode({"userId": receiverId}));
 
     var chatDetails = jsonDecode(response.body)["data"];
+
+    var chatDoc = await FirebaseFirestore.instance
+        .collection('chats')
+        .where('participants', arrayContains: userId)
+        .get();
+
+    String recentMessage = "";
+    Timestamp? lastMessageTimestamp;
+    int unreadMessages = 0;
+
+    for (var doc in chatDoc.docs) {
+      var participants = doc['participants'] as List<dynamic>;
+      if (participants.contains(receiverId)) {
+        var messagesQuery = await doc.reference
+            .collection('messages')
+            .orderBy('timestamp', descending: true)
+            .limit(1)
+            .get();
+
+        if (messagesQuery.docs.isNotEmpty) {
+          var messageData = messagesQuery.docs.first.data();
+          recentMessage = messageData['text'] ?? "[Image]";
+          lastMessageTimestamp = messageData['timestamp'] as Timestamp?;
+          unreadMessages = messagesQuery.docs
+              .where((doc) => !doc.data()['seen'])
+              .length;
+        }
+        break;
+      }
+    }
+
+    String formattedTimestamp = lastMessageTimestamp != null
+        ? "${lastMessageTimestamp.toDate().hour}:${lastMessageTimestamp.toDate().minute}"
+        : "Just now";
+
     setState(() {
       chatList.add({
         "connectID": chatDetails["userID"],
         "name": chatDetails["userName"],
-        "profileImage": chatDetails["userProfilePic"], // Assuming the profile image URL is available
-        "content": "Recent message preview", // Placeholder for recent message preview
-        "messages": 0, // Placeholder for unread messages count
-        "timestamp": "Just now", // Placeholder for last message timestamp
+        "profileImage": chatDetails["userProfilePic"],
+        "content": recentMessage,
+        "messages": unreadMessages,
+        "timestamp": formattedTimestamp,
+      });
+
+      filteredChatList = chatList; // Initialize the filtered list
+      // Sort the chatList by timestamp
+      chatList.sort((a, b) {
+        DateTime aTime = DateTime.parse(a["timestamp"]);
+        DateTime bTime = DateTime.parse(b["timestamp"]);
+        return bTime.compareTo(aTime); // Sort in descending order
       });
     });
     print(chatList);
+  }
+
+  void filterChats() {
+    setState(() {
+      filteredChatList = chatList.where((chat) {
+        return chat['name'].toLowerCase().contains(searchQuery.toLowerCase()) ||
+            chat['content'].toLowerCase().contains(searchQuery.toLowerCase());
+      }).toList();
+    });
   }
 }

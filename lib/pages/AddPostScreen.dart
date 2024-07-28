@@ -116,8 +116,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
+    return Scaffold(
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(73),
           child: AppBar(
@@ -213,7 +212,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }

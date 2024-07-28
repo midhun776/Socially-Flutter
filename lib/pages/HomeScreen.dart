@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:socially/config.dart';
 import 'package:socially/pages/ChatInboxScreen.dart';
+import 'package:socially/pages/DashboardScreen.dart';
 import 'package:socially/pages/NotificationScreen.dart';
 import 'package:http/http.dart' as http;
+import 'package:socially/pages/profile/otherprofile_screen.dart';
 
 import '../Resources/colorresources.dart';
 import '../custom_icons_icons.dart';
@@ -149,7 +152,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 SizedBox(height: 1.0),
                 allFeedPosts.isEmpty
-                    ? Center(child: CircularProgressIndicator())
+                    ? Column(
+                      children: [
+                        Center(child: CircularProgressIndicator()),
+                        SizedBox(height: 10,),
+                        Text("Nothing to show!")
+                      ],
+                    )
                     : ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
@@ -171,21 +180,31 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 18.0, top: 15.0),
-                                  child: CircleAvatar(
-                                    backgroundImage: NetworkImage(post['userProfilePic']),
-                                    radius: 22.0,
+                            GestureDetector(
+                              onTap: () {
+                                if(post['userID'] == userId) {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => OtherProfileScreen(userId: post['userID'],)));
+                                } else {
+                                  setState(() {
+                                  });
+                                }
+                              },
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 18.0, top: 15.0),
+                                    child: CircleAvatar(
+                                      backgroundImage: NetworkImage(post['userProfilePic']),
+                                      radius: 22.0,
+                                    ),
                                   ),
-                                ),
-                                 SizedBox(width: 14.0),
-                                Text(
-                                  post['userName'],
-                                  style: TextStyle(fontSize: 20.0),
-                                ),
-                              ],
+                                   SizedBox(width: 14.0),
+                                  Text(
+                                    post['userName'],
+                                    style: TextStyle(fontSize: 20.0),
+                                  ),
+                                ],
+                              ),
                             ),
 
                             Padding(
@@ -262,9 +281,6 @@ class _HomeScreenState extends State<HomeScreen> {
     var userChats = userDetails?.remove("chats");
     print(userConnection);
     print(userDetails);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(userDetails.toString())),
-    );
 
     fetchFeedPosts();
   }
@@ -286,9 +302,17 @@ class _HomeScreenState extends State<HomeScreen> {
     var jsonResponse = jsonDecode(response.body);
     List<dynamic> allPosts = jsonResponse["data"];
 
-    setState(() {
-      allFeedPosts = allPosts;
-    });
+    print("Posts: $allPosts");
+
+    if(allPosts[0]['userName'] == null) {
+      setState(() {
+        allFeedPosts = [];
+      });
+    } else {
+      setState(() {
+        allFeedPosts = allPosts;
+      });
+    }
 
     print("Fetched feed posts: $allFeedPosts");
   }

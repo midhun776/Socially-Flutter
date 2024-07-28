@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:socially/Resources/colorresources.dart';
 import 'package:socially/pages/LocationSearchScreen.dart';
+import 'package:socially/config.dart';
+import 'package:http/http.dart' as http;
+import 'package:socially/pages/profile/otherprofile_screen.dart';
 
 class ConnectScreen extends StatefulWidget {
   const ConnectScreen({super.key});
@@ -11,20 +16,14 @@ class ConnectScreen extends StatefulWidget {
 }
 
 class _ConnectScreenState extends State<ConnectScreen> {
+  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
   String _selectedLocation = 'Kochi';
   List<String> _locations = ['Kochi', 'Thevara', 'Kaloor'];
 
   // List of friends
-  final List<Map<String, String>> _allFriends = [
-    {'name': 'Merin Mathew', 'location': 'Thevara, Kochi'},
-    {'name': 'Alvin Abraham', 'location': 'Kaloor, Kochi'},
-    {'name': 'Kareema', 'location': 'Kaloor, Kochi'},
-    {'name': 'Civiya', 'location': 'Thevara, Kochi'},
-    {'name': 'Nazim', 'location': 'Edapally, Kochi'},
-    {'name': 'Dony', 'location': 'Kaloor, Kochi, Kerala, India'}
-  ];
+  List<dynamic> _allFriends = [];
 
-  List<Map<String, String>> _filteredFriends = [];
+  List<dynamic> _filteredFriends = [];
   late GoogleMapController mapController;
 
   LatLng _center = const LatLng(9.9312, 76.2673);
@@ -34,7 +33,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
   @override
   void initState() {
     super.initState();
-    _filterFriends();
+    getAllUsers();
   }
 
   void _filterFriends() {
@@ -123,10 +122,25 @@ class _ConnectScreenState extends State<ConnectScreen> {
       ),
     );
   }
+
+  void getAllUsers() async {
+    var response = await http.get(Uri.parse(getUsers),
+        headers: {"Content-Type": "application/json"});
+
+    var jsonResponse = jsonDecode(response.body);
+    List<dynamic> allUsers = jsonResponse["data"];
+
+    setState(() {
+      _allFriends = allUsers;
+    });
+
+    _filterFriends();
+  }
 }
 
 class NearbyFriendsPopup extends StatelessWidget {
-  final List<Map<String, String>> friends;
+  final List<dynamic> friends;
+  var userId = FirebaseAuth.instance.currentUser?.uid.toString();
 
   NearbyFriendsPopup({required this.friends});
 
@@ -160,10 +174,15 @@ class NearbyFriendsPopup extends StatelessWidget {
                 boxShadow: [BoxShadow(blurRadius: 2, color: Colors.black.withOpacity(0.5))],
               ),
               child: ListTile(
+                onTap: () {
+                  if(friends[index]['userID'] != userId) {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => OtherProfileScreen(userId: friends[index]['userID'],)));
+                  }
+                },
                 leading: CircleAvatar(
                   backgroundImage: AssetImage('assets/images/user${index + 1}.jpg'), // Replace with actual images
                 ),
-                title: Text(friends[index]['name']!, style: TextStyle(fontWeight: FontWeight.bold),),
+                title: Text(friends[index]['userName']!, style: TextStyle(fontWeight: FontWeight.bold),),
                 subtitle: Text(friends[index]['location']!),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,

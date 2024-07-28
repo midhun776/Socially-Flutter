@@ -21,13 +21,14 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   var userId = FirebaseAuth.instance.currentUser?.uid.toString();
   Map<String, dynamic>? userDetails;
+  List<dynamic> allFeedPosts = [];
 
   @override
-
   void initState() {
     super.initState();
     if (userId != null) {
       getUserData(userId!);
+      fetchFeedPosts();
     }
   }
 
@@ -68,9 +69,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: userDetails != null && userDetails!['userProfilePic'] != null
+                    backgroundImage: userDetails != null &&
+                            userDetails!['userProfilePic'] != null
                         ? NetworkImage(userDetails!['userProfilePic'])
-                        : const AssetImage('assets/images/profilePic.png') as ImageProvider,
+                        : const AssetImage('assets/images/profilePic.png')
+                            as ImageProvider,
                   ),
                 ],
               ),
@@ -93,8 +96,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const SizedBox(height: 10),
                   Text(
-                    userDetails != null ? userDetails!['userName'] ?? 'Unknown' : 'Loading...',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    userDetails != null
+                        ? userDetails!['userName'] ?? 'Unknown'
+                        : 'Loading...',
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -105,8 +111,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        userDetails != null ? userDetails!['location'] ?? 'Unknown' : 'Loading...',
-                        style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                        userDetails != null
+                            ? userDetails!['location'] ?? 'Unknown'
+                            : 'Loading...',
+                        style: const TextStyle(
+                            color: Colors.grey, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -114,13 +123,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorResources.SecondaryColor, // Background color
+                      backgroundColor: ColorResources.SecondaryColor,
+                      // Background color
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       child: Text(
                         'Edit Profile',
                         style: TextStyle(color: Colors.white),
@@ -141,42 +152,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Stats Row
                   Container(
                     decoration: BoxDecoration(
-                      color: ColorResources.PrimaryColor, // Background color for stats column
-                      borderRadius: BorderRadius.circular(8), // Border radius for stats column
+                      color: ColorResources.PrimaryColor,
+                      // Background color for stats column
+                      borderRadius: BorderRadius.circular(
+                          8), // Border radius for stats column
                     ),
                     padding: const EdgeInsets.all(18.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatColumn(userDetails?['posts']?.toString() ?? '0', 'Posts'),
+                        _buildStatColumn(
+                            userDetails?['posts']?.toString() ?? '0', 'Posts'),
                         _buildCustomDivider(), // Custom divider after Posts
-                        _buildStatColumn(userDetails?['connections']?.length.toString() ?? '0', 'Connections'),
+                        _buildStatColumn(
+                            userDetails?['connections']?.length.toString() ??
+                                '0',
+                            'Connections'),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12), // Space between stats and grid
                   // Grid View for Photos
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 5,
-                      mainAxisSpacing: 5,
-                    ),
-                    itemCount: 6, // Replace with the actual number of items
-                    itemBuilder: (context, index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/img_1.png'),
-                            fit: BoxFit.cover,
+                  allFeedPosts.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(child: Text("No posts to show")),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 5,
+                            mainAxisSpacing: 5,
                           ),
+                          itemCount: allFeedPosts.length,
+                          // Replace with the actual number of items
+                          itemBuilder: (context, index) {
+                            final post = allFeedPosts[index];
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(2),
+                                image: DecorationImage(
+                                  image: post['image'] != ""
+                                      ? NetworkImage(post['image'])
+                                      : AssetImage("assets/images/postImg.png")
+                                          as ImageProvider,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
@@ -231,6 +259,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     var userChats = userDetails?["chats"];
     print(userConnectionCount);
     print(userDetails);
+  }
 
+  void fetchFeedPosts() async {
+    print("Fetching feed posts");
+
+    List<String> allUserIds = [userId!];
+    print(allUserIds);
+
+    var reqBody = {
+      "userIds": allUserIds,
+    };
+
+    var response = await http.post(Uri.parse(fetchPostApi),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    var jsonResponse = jsonDecode(response.body);
+    List<dynamic> allPosts = jsonResponse["data"];
+
+    if(allPosts[0]['userName'] == null) {
+      setState(() {
+        allFeedPosts = [];
+      });
+    } else {
+      setState(() {
+        allFeedPosts = allPosts;
+      });
+    }
+
+    print("Fetched feed posts: $allFeedPosts");
   }
 }

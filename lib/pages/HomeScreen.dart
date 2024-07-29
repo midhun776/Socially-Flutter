@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                if(post['userID'] == userId) {
+                                if(post['userID'] != userId) {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => OtherProfileScreen(userId: post['userID'],)));
                                 } else {
                                   setState(() {

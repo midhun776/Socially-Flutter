@@ -33,7 +33,7 @@ class _AddLocationState extends State<AddLocation> {
   );
 
   void makeSuggestion(String input) async {
-    String googlePlacesApiKey = "AIzaSyBQ_bgPiu0-Z66L5RejBWU1vUU_bNr1mCk"; // Replace with your actual API key
+    String googlePlacesApiKey = "AIzaSyBCRjddoCsx_HE2ZqnwAqIKPWCOy4EQ-hk"; // Replace with your actual API key
     String groundURL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
     String request = '$groundURL?input=$input&key=$googlePlacesApiKey&sessiontoken=$tokenForSession';
 
@@ -118,160 +118,163 @@ class _AddLocationState extends State<AddLocation> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 35),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 22),
-                child: Row(
-                  children: [
-                    RichText(
-                      text: const TextSpan(
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          height: 1.3,
-                        ),
-                        children: [
-                          TextSpan(text: 'Enter Your\n'),
-                          TextSpan(
-                            text: 'Location ',
-                            style: TextStyle(color: Color(0xFF618F00)),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 35),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 22),
+                  child: Row(
+                    children: [
+                      RichText(
+                        text: const TextSpan(
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            height: 1.3,
                           ),
-                          TextSpan(text: 'Now!'),
-                        ],
+                          children: [
+                            TextSpan(text: 'Enter Your\n'),
+                            TextSpan(
+                              text: 'Location ',
+                              style: TextStyle(color: Color(0xFF618F00)),
+                            ),
+                            TextSpan(text: 'Now!'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: TextFormField(
-                  controller: _addLocationController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF618F00)),
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF618F00), width: 1.5),
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    hintText: 'Location',
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.all(15),
-                      child: Icon(
-                        Icons.location_pin,
-                        color: Color(0xFF618F00),
-                      ),
-                    ),
-                    hintStyle: TextStyle(color: Color(0xFF000000), fontSize: 18),
-                    filled: true,
-                    fillColor: Color(0xFFE2E7DE),
+                    ],
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your location';
-                    }
-                    return null;
-                  },
                 ),
-              ),
-              Container(
-                constraints: BoxConstraints(maxHeight: 200),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: listForPlaces.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: ListTile(
-                        onTap: () async {
-                          List<Location> locations = await locationFromAddress(listForPlaces[index]['description']);
-                          print(locations.last.latitude);
-                          print(locations.last.longitude);
-                          setState(() {
-                            final List<String> result = [
-                              listForPlaces[index]['description'].toString(),
-                              locations.last.latitude.toString(),
-                              locations.last.longitude.toString()
-                            ];
-                            print("My" + result.toString());
-                            _selectedLocation = LatLng(double.parse(result[1].toString()), double.parse(result[2].toString()));
-                            _mapController?.animateCamera(CameraUpdate.newLatLng(_selectedLocation));
-                            _addLocationController.text = listForPlaces[index]['description'];
-                          });
-                        },
-                        title: Text(listForPlaces[index]['description']),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  child: TextFormField(
+                    controller: _addLocationController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF618F00)),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
-                    );
-                  },
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF618F00), width: 1.5),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
+                      hintText: 'Location',
+                      prefixIcon: Padding(
+                        padding: EdgeInsets.all(15),
+                        child: Icon(
+                          Icons.location_pin,
+                          color: Color(0xFF618F00),
+                        ),
+                      ),
+                      hintStyle: TextStyle(color: Color(0xFF000000), fontSize: 18),
+                      filled: true,
+                      fillColor: Color(0xFFE2E7DE),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your location';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: 5),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-                child: Container(
-                  height: 200,
-                  child: Material(
-                    elevation: 8.0,
-                    borderRadius: BorderRadius.circular(15),
-                    child: ClipRRect(
+                Container(
+                  constraints: BoxConstraints(maxHeight: 200),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: listForPlaces.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                        child: ListTile(
+                          onTap: () async {
+                            List<Location> locations = await locationFromAddress(listForPlaces[index]['description']);
+                            print(locations.last.latitude);
+                            print(locations.last.longitude);
+                            setState(() {
+                              final List<String> result = [
+                                listForPlaces[index]['description'].toString(),
+                                locations.last.latitude.toString(),
+                                locations.last.longitude.toString()
+                              ];
+                              print("My" + result.toString());
+                              _selectedLocation = LatLng(double.parse(result[1].toString()), double.parse(result[2].toString()));
+                              _mapController?.animateCamera(CameraUpdate.newLatLng(_selectedLocation));
+                              _addLocationController.text = listForPlaces[index]['description'];
+                            });
+                            listForPlaces = [];
+                          },
+                          title: Text(listForPlaces[index]['description']),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                  child: Container(
+                    height: 200,
+                    child: Material(
+                      elevation: 8.0,
                       borderRadius: BorderRadius.circular(15),
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: _selectedLocation,
-                          zoom: 15.0,
-                        ),
-                        onTap: _onMapTap,
-                        markers: {
-                          Marker(
-                            markerId: MarkerId('selectedLocation'),
-                            position: _selectedLocation,
-                            draggable: true,
-                            onDragEnd: (newPosition) {
-                              setState(() {
-                                _selectedLocation = newPosition;
-                              });
-                            },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: _selectedLocation,
+                            zoom: 15.0,
                           ),
-                        },
-                        onMapCreated: (GoogleMapController controller) {
-                          _mapController = controller;
-                        },
+                          onTap: _onMapTap,
+                          markers: {
+                            Marker(
+                              markerId: MarkerId('selectedLocation'),
+                              position: _selectedLocation,
+                              draggable: true,
+                              onDragEnd: (newPosition) {
+                                setState(() {
+                                  _selectedLocation = newPosition;
+                                });
+                              },
+                            ),
+                          },
+                          onMapCreated: (GoogleMapController controller) {
+                            _mapController = controller;
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: const Color(0xFF618F00),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF618F00),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        textStyle: const TextStyle(fontSize: 16),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      textStyle: const TextStyle(fontSize: 16),
+                      onPressed: _addLocation,
+                      child: const Text('Register'),
                     ),
-                    onPressed: _addLocation,
-                    child: const Text('Register'),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

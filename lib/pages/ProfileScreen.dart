@@ -162,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildStatColumn(
-                            userDetails?['posts']?.toString() ?? '0', 'Posts'),
+                            allFeedPosts.length.toString(), 'Posts'),
                         _buildCustomDivider(), // Custom divider after Posts
                         _buildStatColumn(
                             userDetails?['connections']?.length.toString() ??

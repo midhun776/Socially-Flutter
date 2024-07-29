@@ -184,35 +184,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _isRememberMeChecked,
-                          onChanged: (value) {
-                            setState(() {
-                              _isRememberMeChecked = value!;
-                            });
-                          },
-                        ),
-                        const Text('Remember Me'),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HomeScreen()),
-                        );
-                      },
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          color: ColorResources.LoginGreen,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
+                    // Row(
+                    //   children: [
+                    //     Checkbox(
+                    //       value: _isRememberMeChecked,
+                    //       onChanged: (value) {
+                    //         setState(() {
+                    //           _isRememberMeChecked = value!;
+                    //         });
+                    //       },
+                    //     ),
+                    //     const Text('Remember Me'),
+                    //   ],
+                    // ),
+                    SizedBox(
+                      height: 10,
+                    )
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //           builder: (context) => const HomeScreen()),
+                    //     );
+                    //   },
+                    //   child: const Text(
+                    //     'Forgot Password?',
+                    //     style: TextStyle(
+                    //       color: ColorResources.LoginGreen,
+                    //       decoration: TextDecoration.underline,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
                 Padding(
@@ -284,19 +287,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: 40, width: 40,
                               ),
                             ),
-                            const SizedBox(width: 33),
-                            GestureDetector(
-                              onTap: () {
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const AddLocation(userData: [],)),
-                                );
-                              },
-                              child: Image.asset('assets/images/facebook.png',
-                                height: 40, width: 40,
-                              ),
-                            ),
+                            // const SizedBox(width: 33),
+                            // GestureDetector(
+                            //   onTap: () {
+                            //
+                            //     Navigator.push(
+                            //       context,
+                            //       MaterialPageRoute(builder: (context) => const AddLocation(userData: [],)),
+                            //     );
+                            //   },
+                            //   child: Image.asset('assets/images/facebook.png',
+                            //     height: 40, width: 40,
+                            //   ),
+                            // ),
                           ],
                         ),
                         const SizedBox(height: 3),
